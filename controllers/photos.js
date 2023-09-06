@@ -3,11 +3,9 @@ const jwt = require("jsonwebtoken");
 const db = require("../db");
 const validateSession = require("../middleware/validate-session");
 
-
-
 // photo endpoints
 
-router.get("/view-all", validateSession, async (req, res) => {
+router.get("/view-all", async (req, res) => {
   try {
     console.log("View All Here");
     const sql = `SELECT * FROM gomot1_july_cohort.photos`;
@@ -17,11 +15,12 @@ router.get("/view-all", validateSession, async (req, res) => {
         res.status(500).json({
           message: "Internal Server Error",
         });
+      } else {
+        res.json({
+          message: "View All Successful",
+          photos: results,
+        });
       }
-    });
-    res.json({
-      message: "View All Successful",
-      photos: results,
     });
     return;
   } catch (error) {
@@ -31,7 +30,7 @@ router.get("/view-all", validateSession, async (req, res) => {
   }
 });
 
-router.get("/view/:athleteId", validateSession, async (req, res) => {
+router.get("/view/:athleteId", async (req, res) => {
   try {
     console.log("View by Athlete ID Here");
     const athleteId = req.params.athleteId;
@@ -42,12 +41,14 @@ router.get("/view/:athleteId", validateSession, async (req, res) => {
         res.status(500).json({
           message: "Internal Server Error",
         });
+      } else {
+        res.json({
+          message: "View All By Athlete ID Successful",
+          photos: results,
+        });
       }
     });
-    res.json({
-      message: "View All By Athlete ID Successful",
-      photos: results,
-    });
+    return;
   } catch (error) {
     res.status(500).json({
       message: error.message,
@@ -55,27 +56,30 @@ router.get("/view/:athleteId", validateSession, async (req, res) => {
   }
 });
 
+router.get("/search/:raceId", async (req, res) => {
+  try {
+    console.log("View by Race ID Here");
+    const raceId = req.params.raceId;
+    const sql = `SELECT * FROM gomot1_july_cohort.photos WHERE raceId = ?`;
+    db.query(sql, [raceId], (err, results) => {
+      if (err) {
+        console.error("SQL Error:", err);
+        res.status(500).json({
+          message: "Internal Server Error",
+        });
+      }else{
+         res.json({
+      message: "RACE ID ENDPOINT WORKS",
+      photos: results,
+    });
+      }
+    });
+   return;
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+});
 
-router.get("/view/:raceId", validateSession, async (req, res) => {
-    try {
-      console.log("View by Race ID Here");
-      const raceId = req.params.raceId;
-      const sql = `SELECT * FROM gomot1_july_cohort.photos WHERE raceId = ?`;
-      db.query(sql, [raceId], (err, results) => {
-        if (err) {
-          console.error("SQL Error:", err);
-          res.status(500).json({
-            message: "Internal Server Error",
-          });
-        }
-      });
-      res.json({
-        message: "View All By Race ID Successful",
-        photos: results,
-      });
-    } catch (error) {
-      res.status(500).json({
-        message: error.message,
-      });
-    }
-  });
+module.exports = router;
