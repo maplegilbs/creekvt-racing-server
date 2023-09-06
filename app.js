@@ -6,7 +6,6 @@ const app = express();
 
 // Controllers
 const usersController = require("./controllers/users");
-const adminController = require("./controllers/admin");
 const racesController = require("./controllers/races");
 const photosController = require("./controllers/photos");
 
