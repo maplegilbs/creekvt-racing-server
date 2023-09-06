@@ -18,7 +18,6 @@ router.post("/register", async (req, res) => {
         if (error) {
           throw Error(error);
         }
-        console.log(results);
         let userId = results.insertId;
         let token = jwt.sign({ userId, email }, process.env.JWT_SECRET, {
           expiresIn: 60 * 60 * 72,
@@ -48,12 +47,10 @@ router.post("/login", async (req, res) => {
         if (results.length === 0) {
           return res.status(401).json({ message: "invalid email or password" });
         } else {
-          console.log(password, results[0]);
           const isPasswordAMatch = bcrypt.compareSync(
             password,
             results[0].password
           );
-          console.log(isPasswordAMatch);
           if (!isPasswordAMatch) {
             return res.status(401).json({ message: "Invalid password" });
           } else {
@@ -75,8 +72,25 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.delete("/delete/:id", async (req, res) => {
+router.delete("/delete/:email", async (req, res) => {
   try {
+    const deletedEmail = req.params.email;
+    db.query(
+      `DELETE FROM athletes WHERE email = ?`,
+      [deletedEmail],
+      (error, results, field) => {
+        if (error) {
+          throw Error(error);
+        }
+        if (results.affectedRows > 0) {
+          res.json({ Message: `Account tied to ${deletedEmail} was deleted` });
+        } else {
+          res
+            .status(404)
+            .json({ Message: `No account found with email ${deletedEmail}` });
+        }
+      }
+    );
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
