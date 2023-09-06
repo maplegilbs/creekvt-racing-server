@@ -7,5 +7,4 @@ const db = MySQL.createPool({
   database: "gomot1_july_cohort",
   multipleStatements: true,
 });
-console.log(db);
 module.exports = db;
