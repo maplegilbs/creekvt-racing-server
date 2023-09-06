@@ -3,6 +3,7 @@ const cors = require("cors");
 const express = require("express");
 const { Sequelize } = require("sequelize");
 const app = express();
+const MySQL = require("mysql");
 
 // Controllers
 const usersController = require("./controllers/users");
@@ -15,10 +16,12 @@ const PORT = process.env.PORT;
 app.use(cors());
 app.use(express.json());
 const db = require("./db");
-db.once("open", () => console.log("connected to the DB: " + db.host));
+
+db.once("open", () => console.log("connected to the DB."));
 // Routes
 
-// app.use("/users", usersController);
+app.use("/users", usersController);
+
 // app.use("/races", racesController);
 app.use("/photos", photosController);
 

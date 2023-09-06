@@ -3,27 +3,73 @@ const router = require("express").Router();
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const db = require("../db");
+require("dotenv").config();
 
-//from router tech
+//user registration
 router.post("/register", async (req, res) => {
   try {
-    const { firstName, lastName, email, password } = req.body;
-    await db.query(
-      `insert into BrentUsers(firstName, lastName, email, password) VALUES (${firstName}, ${lastName}, ${email}, ${password})`
+    const { firstName, lastName, email, age, gender, isAdmin, password } =
+      req.body;
+    const hashedPassword = await bcrypt.hashSync(password, 10);
+    const result = db.query(
+      `insert into athletes(firstName, lastName, email, age, gender, isAdmin, password) VALUES (?,?,?,?,?,?,?)`,
+      [firstName, lastName, email, age, gender, isAdmin, hashedPassword],
+      (error, results, fields) => {
+        if (error) {
+          throw Error(error);
+        }
+        console.log(results);
+        let userId = results.insertId;
+        let token = jwt.sign({ userId, email }, process.env.JWT_SECRET, {
+          expiresIn: 60 * 60 * 72,
+        });
+        res.json({
+          message: "User Registration Success.",
+          user: `${firstName} ${lastName}`,
+          token,
+        });
+      }
     );
-    //need to change the values to ?,?,? and make prepared statements to fill in actual values
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-//trying to get SQL to work
-let registerUser = `Insert INTO BrentUsers (email, username, bio) VALUES ("steve@test.org", "steveJ0bs22", "My name is steve Jobs and I approve this message")`;
-// db.query(registerUser, funciton (err,result,fields){});
-
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
+    db.query(
+      `SELECT id, email, password FROM athletes WHERE email = ?`,
+      [email],
+      (error, results, fields) => {
+        if (error) {
+          throw Error(error);
+        }
+        if (results.length === 0) {
+          return res.status(401).json({ message: "invalid email or password" });
+        } else {
+          console.log(password, results[0]);
+          const isPasswordAMatch = bcrypt.compareSync(
+            password,
+            results[0].password
+          );
+          console.log(isPasswordAMatch);
+          if (!isPasswordAMatch) {
+            return res.status(401).json({ message: "Invalid password" });
+          } else {
+            let token = jwt.sign(
+              {
+                userId: results[0].id,
+                email: results[0].email,
+              },
+              process.env.JWT_SECRET,
+              { expiresIn: 60 * 60 * 72 }
+            );
+            res.json({ message: "login successful.", token });
+          }
+        }
+      }
+    );
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
