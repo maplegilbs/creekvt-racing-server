@@ -8,7 +8,7 @@ const db = require("../db");
 router.post("/register", async (req, res) => {
   try {
     const { firstName, lastName, email, password } = req.body;
-    await db.query(
+    db.query(
       `insert into BrentUsers(firstName, lastName, email, password) VALUES (${firstName}, ${lastName}, ${email}, ${password})`
     );
     //need to change the values to ?,?,? and make prepared statements to fill in actual values
