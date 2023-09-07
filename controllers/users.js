@@ -101,7 +101,7 @@ router.patch("/update/:id", async (req, res) => {
     const id = req.params.id;
     const filter = {};
     const data = req.body;
-    const options = { new: true };
+    db.query(`UPDATE athletes SET ${filter} = ${data} WHERE id = ${id}`);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
