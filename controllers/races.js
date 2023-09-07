@@ -140,50 +140,47 @@ router.patch("/update/:race_id", async (req, res) => {
       affiliatedOrganization,
     } = req.body;
     const id = req.params.race_id;
-    db.query(
-      `UPDATE races SET
-          name = ?,
-          difficulty = ?,
-          location = ?,
-          numberOfLaps = ?,
-          registeredRacers = ?,
-          format = ?,
-          date = ?,
-          startTime = ?,
-          putIn = ?,
-          takeOut = ?,
-          fallBackDate = ?,
-          gauges = ?,
-          organizerContact = ?,
-          affiliatedOrganization = ?
-        WHERE id = ?`,
-      [
-        name,
-        difficulty,
-        location,
-        numberOfLaps,
-        registeredRacers,
-        format,
-        date,
-        startTime,
-        putIn,
-        takeOut,
-        fallBackDate,
-        gauges,
-        organizerContact,
-        affiliatedOrganization,
-        id,
-      ],
-      (error, results, fields) => {
-        if (error) {
-          throw Error(error);
-        }
-        console.log(results);
-      }
-    );
-    res.json({
-      message: "Race Updated",
+    let updates = [];
+    Object.keys(req.body).forEach((key) => {
+      updates.push(`${key} = "${req.body[key]}"`);
     });
+    if (updates.length > 0) {
+      if (updates.length > 1) {
+        db.query(
+          `UPDATE races SET
+      ${updates.join(", ")}
+        WHERE id = ?`,
+          [id],
+          (error, results, fields) => {
+            if (error) {
+              throw Error(error);
+            }
+            console.log(results);
+          }
+        );
+        res.json({
+          message: "Race Updated",
+        });
+      } else {
+        db.query(
+          `UPDATE races SET
+      ${updates.join(" ")}
+        WHERE id = ?`,
+          [id],
+          (error, results, fields) => {
+            if (error) {
+              throw Error(error);
+            }
+            console.log(results);
+          }
+        );
+        res.json({
+          message: "Race Updated",
+        });
+      }
+    } else {
+      res.status(404).json({ message: "No data given." });
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
