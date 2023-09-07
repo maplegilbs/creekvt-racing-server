@@ -17,11 +17,10 @@ app.use(cors());
 app.use(express.json());
 const db = require("./db");
 
-db.once("open", () => console.log("connected to the DB."));
+db.once("open", () => console.log("connected to the DB: " + db.host));
 // Routes
 
 app.use("/users", usersController);
-
 app.use("/races", racesController);
 app.use("/photos", photosController);
 
