@@ -8,6 +8,7 @@ require("dotenv").config();
 //user registration
 router.post("/register", async (req, res) => {
   try {
+
     const { firstName, lastName, email, age, gender, isAdmin, password } =
       req.body;
     const hashedPassword = await bcrypt.hashSync(password, 10);
@@ -28,6 +29,7 @@ router.post("/register", async (req, res) => {
           token,
         });
       }
+
     );
   } catch (error) {
     res.status(500).json({ message: error.message });
