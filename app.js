@@ -22,7 +22,7 @@ db.once("open", () => console.log("connected to the DB."));
 
 app.use("/users", usersController);
 
-// app.use("/races", racesController);
+app.use("/races", racesController);
 app.use("/photos", photosController);
 
 app.listen(PORT, () => {
