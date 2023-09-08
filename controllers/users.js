@@ -4,11 +4,11 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const db = require("../db");
 require("dotenv").config();
+const adminSession = require("../middleware/admin-session");
 
 //user registration
 router.post("/register", async (req, res) => {
   try {
-
     const { firstName, lastName, email, age, gender, isAdmin, password } =
       req.body;
     const hashedPassword = await bcrypt.hashSync(password, 10);
@@ -29,7 +29,6 @@ router.post("/register", async (req, res) => {
           token,
         });
       }
-
     );
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -74,7 +73,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.delete("/delete/:email", async (req, res) => {
+router.delete("/delete/:email", adminSession, async (req, res) => {
   try {
     const deletedEmail = req.params.email;
     db.query(
@@ -98,12 +97,50 @@ router.delete("/delete/:email", async (req, res) => {
   }
 });
 
-router.patch("/update/:id", async (req, res) => {
+router.patch("/update/:id", adminSession, async (req, res) => {
   try {
     const id = req.params.id;
-    const filter = {};
-    const data = req.body;
-    const options = { new: true };
+    const { firstName, lastName, age, gender } = req.body;
+    let updateFields = [];
+    let updateValues = [];
+
+    if (firstName !== undefined) {
+      updateFields.push("firstName = ?");
+      updateValues.push(firstName);
+    }
+    if (lastName !== undefined) {
+      updateFields.push("lastName = ?");
+      updateValues.push(lastName);
+    }
+    if (age !== undefined) {
+      updateFields.push("age = ?");
+      let ageValue = parseInt(age);
+      updateValues.push(ageValue);
+    }
+    if (gender !== undefined) {
+      updateFields.push("gender = ?");
+      updateValues.push(gender);
+    }
+    if (updateFields.length === 0) {
+      return res.status(400).json({ message: "No fields to update" });
+    }
+    let idValue = parseInt(id);
+    updateValues.push(idValue);
+    let updateQuery = `UPDATE athletes SET ${updateFields.join(
+      ", "
+    )} WHERE id = ?`;
+    db.query(updateQuery, updateValues, (error, results, fields) => {
+      if (error) {
+        throw Error(error);
+      }
+      if (results.length === 0) {
+        res.status(404).json({ message: "Athlete not found" });
+      } else {
+        res.status(200).json({
+          message: "Athlete updated successfully",
+        });
+      }
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
