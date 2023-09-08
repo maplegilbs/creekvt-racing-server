@@ -20,9 +20,13 @@ router.post("/register", async (req, res) => {
           throw Error(error);
         }
         let userId = results.insertId;
-        let token = jwt.sign({ userId, email }, process.env.JWT_SECRET, {
-          expiresIn: 60 * 60 * 72,
-        });
+        let token = jwt.sign(
+          { userId, email, firstName },
+          process.env.JWT_SECRET,
+          {
+            expiresIn: 60 * 60 * 72,
+          }
+        );
         res.json({
           message: "User Registration Success.",
           user: `${firstName} ${lastName}`,
@@ -59,6 +63,7 @@ router.post("/login", async (req, res) => {
               {
                 userId: results[0].id,
                 email: results[0].email,
+                firstName: results[0].firstName,
               },
               process.env.JWT_SECRET,
               { expiresIn: 60 * 60 * 72 }
