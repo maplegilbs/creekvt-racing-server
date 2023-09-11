@@ -29,7 +29,7 @@ router.get("/view-all", async (req, res) => {
 router.get("/view/:name", async (req, res) => {
   try {
     const { name } = req.params;
-    const query = `SELECT * FROM races WHERE name = ${name}`;
+    const query = `SELECT * FROM races WHERE LOWER(name) = "${name.toLowerCase()}"`;
     db.query(query, (err, results) => {
       if (err) {
         throw err;
@@ -186,4 +186,69 @@ router.patch("/update/:race_id", async (req, res) => {
   }
 });
 
+// Register Athlete Endpoint
+router.post("/register/:race_id/:athlete_id", async (req, res) => {
+  try {
+    const { race_id, athlete_id } = req.params;
+    db.query(
+      `INSERT INTO registeredAthletes(raceId, athleteId) VALUES (?,?)`,
+      [race_id, athlete_id],
+      (error, results, fields) => {
+        if (error) {
+          throw Error(error);
+        }
+        let userId = results.insertId;
+        res.json({
+          message: "Athlete successfully registered for race.",
+        });
+      }
+    );
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// View All Registered Athletes Endpoint
+router.get("/view-registered-athletes/:race_id", async (req, res) => {
+  try {
+    const { race_id } = req.params;
+    const query = `SELECT athletes.firstName, athletes.lastName FROM athletes JOIN registeredAthletes ON athletes.id = registeredAthletes.athleteId WHERE registeredAthletes.raceId = ${race_id}`;
+    db.query(query, (err, results) => {
+      if (err) {
+        throw err;
+      }
+      if (results.length === 0) {
+        res
+          .status(404)
+          .json({
+            message: "Race not found or no currently registered racers",
+          });
+      } else {
+        res.json({ registeredRacers: results });
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Athlete View ALl Registered Races Endpoint
+router.get("/view-registered-races/:race_id/:athlete_id", async (req, res) => {
+  try {
+    const { race_id, athlete_id } = req.params;
+    const query = `SELECT races.name, races.year FROM races JOIN registeredAthletes ON races.id = registeredAthletes.raceId WHERE registeredAthletes.raceId = ${race_id} AND registeredAthletes.athleteId = ${athlete_id}`;
+    db.query(query, (err, results) => {
+      if (err) {
+        throw err;
+      }
+      if (results.length === 0) {
+        res.status(404).json({ message: "No races found" });
+      } else {
+        res.json({ registeredRaces: results });
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 module.exports = router;

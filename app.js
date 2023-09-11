@@ -9,6 +9,7 @@ const MySQL = require("mysql");
 const usersController = require("./controllers/users");
 const racesController = require("./controllers/races");
 const photosController = require("./controllers/photos");
+const resultsController = require("./controllers/results");
 
 const PORT = 3307;
 
@@ -23,6 +24,7 @@ db.once("open", () => console.log("connected to the DB: " + db.host));
 app.use("/users", usersController);
 app.use("/races", racesController);
 app.use("/photos", photosController);
+app.use("/race-results", resultsController);
 
 app.listen(PORT, () => {
   console.log(`server is running on port ${PORT}`);

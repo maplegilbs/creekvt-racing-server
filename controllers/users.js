@@ -43,8 +43,8 @@ router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     db.query(
-      `SELECT id, email, password FROM athletes WHERE email = ?`,
-      [email],
+      `SELECT id, email, password FROM athletes WHERE LOWER(email) = ?`,
+      [email.toLowerCase()],
       (error, results, fields) => {
         if (error) {
           throw Error(error);
@@ -82,8 +82,8 @@ router.delete("/delete/:email", adminSession, async (req, res) => {
   try {
     const deletedEmail = req.params.email;
     db.query(
-      `DELETE FROM athletes WHERE email = ?`,
-      [deletedEmail],
+      `DELETE FROM athletes WHERE LOWER(email) = ?`,
+      [deletedEmail.toLowerCase()],
       (error, results, field) => {
         if (error) {
           throw Error(error);
