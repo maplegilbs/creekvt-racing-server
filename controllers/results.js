@@ -25,7 +25,7 @@ router.get("/view-all", async (req, res) => {
 router.get("/view-by-name/:name", async (req, res) => {
   try {
     const { name } = req.params;
-    const query = `SELECT * FROM raceResults WHERE RaceName = "${name}"`;
+    const query = `SELECT * FROM raceResults WHERE LOWER(RaceName) = "${name.toLowerCase()}"`;
     db.query(query, (err, results) => {
       if (err) {
         throw err;
@@ -45,7 +45,7 @@ router.get("/view-by-name/:name", async (req, res) => {
 router.get("/view-by-year/:name/:year", async (req, res) => {
   try {
     const { name, year } = req.params;
-    const query = `SELECT * FROM raceResults WHERE raceName = '${name}' AND year = '${year}'`;
+    const query = `SELECT * FROM raceResults WHERE LOWER(raceName) = '${name.toLowerCase()}' AND year = '${year}'`;
     db.query(query, (err, results) => {
       if (err) {
         throw err;
@@ -65,7 +65,7 @@ router.get("/view-by-year/:name/:year", async (req, res) => {
 router.get("/view-by-category/:name/:category", async (req, res) => {
   try {
     const { name, category } = req.params;
-    const query = `SELECT * FROM raceResults WHERE raceName = '${name}' AND raceCategory = '${category}'`;
+    const query = `SELECT * FROM raceResults WHERE LOWER(raceName) = '${name.toLowerCase()}' AND LOWER(raceCategory) = '${category.toLowerCase()}'`;
     db.query(query, (err, results) => {
       if (err) {
         throw err;
