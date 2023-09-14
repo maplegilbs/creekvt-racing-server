@@ -25,7 +25,8 @@ router.get("/view-all", async (req, res) => {
 router.get("/view-by-name/:name", async (req, res) => {
   try {
     const { name } = req.params;
-    const query = `SELECT * FROM raceResults WHERE LOWER(RaceName) = "${name.toLowerCase()}"`;
+    const query = `SELECT * FROM raceResults WHERE LOWER(raceName) = "${name.replaceAll("-", " ")}"`;
+    console.log(query);
     db.query(query, (err, results) => {
       if (err) {
         throw err;

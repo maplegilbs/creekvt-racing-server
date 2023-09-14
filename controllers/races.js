@@ -29,7 +29,7 @@ router.get("/view-all", async (req, res) => {
 router.get("/view/:name", async (req, res) => {
   try {
     const { name } = req.params;
-    const query = `SELECT * FROM races WHERE LOWER(name) = "${name.toLowerCase()}"`;
+    const query = `SELECT * FROM races WHERE LOWER(name) = "${name.replaceAll("-", " ")}"`;
     db.query(query, (err, results) => {
       if (err) {
         throw err;
@@ -53,7 +53,6 @@ router.post("/new", async (req, res) => {
       difficulty,
       location,
       numberOfLaps,
-      registeredRacers,
       format,
       date,
       startTime,
@@ -65,13 +64,12 @@ router.post("/new", async (req, res) => {
       affiliatedOrganization,
     } = req.body;
     db.query(
-      `INSERT INTO races(name, difficulty, location, numberOfLaps, registeredRacers, format, date, startTime, putIn, takeOut, fallBackDate, gauges, organizerContact, affiliatedOrganization) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      `INSERT INTO races(name, difficulty, location, numberOfLaps, format, date, startTime, putIn, takeOut, fallBackDate, gauges, organizerContact, affiliatedOrganization) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       [
         name,
         difficulty,
         location,
-        numberOfLaps,
-        registeredRacers,
+        numberOfLaps, 
         format,
         date,
         startTime,
