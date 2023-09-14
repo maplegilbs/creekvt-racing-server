@@ -43,7 +43,7 @@ router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     db.query(
-      `SELECT id, email, password FROM athletes WHERE LOWER(email) = ?`,
+      `SELECT id, email, password, firstName FROM athletes WHERE LOWER(email) = ?`,
       [email.toLowerCase()],
       (error, results, fields) => {
         if (error) {
@@ -68,7 +68,8 @@ router.post("/login", async (req, res) => {
               process.env.JWT_SECRET,
               { expiresIn: 60 * 60 * 72 }
             );
-            res.json({ message: "login successful.", token });
+            let storedFirstName = results[0].firstName;
+            res.json({ message: "login successful.", token, storedFirstName });
           }
         }
       }
