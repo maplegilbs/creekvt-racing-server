@@ -232,7 +232,7 @@ router.get("/view-registered-athletes/:race_id", async (req, res) => {
   }
 });
 
-// Athlete View ALl Registered Races Endpoint
+// Athlete View All Registered Races Endpoint
 router.get("/view-registered-races/:race_id/:athlete_id", async (req, res) => {
   try {
     const { race_id, athlete_id } = req.params;
