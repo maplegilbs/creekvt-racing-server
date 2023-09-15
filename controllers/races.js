@@ -29,7 +29,10 @@ router.get("/view-all", async (req, res) => {
 router.get("/view/:name", async (req, res) => {
   try {
     const { name } = req.params;
-    const query = `SELECT * FROM races WHERE LOWER(name) = "${name.replaceAll("-", " ")}"`;
+    const query = `SELECT * FROM races WHERE LOWER(name) = "${name.replaceAll(
+      "-",
+      " "
+    )}"`;
     db.query(query, (err, results) => {
       if (err) {
         throw err;
@@ -69,7 +72,7 @@ router.post("/new", async (req, res) => {
         name,
         difficulty,
         location,
-        numberOfLaps, 
+        numberOfLaps,
         format,
         date,
         startTime,
@@ -210,17 +213,15 @@ router.post("/register/:race_id/:athlete_id", async (req, res) => {
 router.get("/view-registered-athletes/:race_id", async (req, res) => {
   try {
     const { race_id } = req.params;
-    const query = `SELECT athletes.firstName, athletes.lastName FROM athletes JOIN registeredAthletes ON athletes.id = registeredAthletes.athleteId WHERE registeredAthletes.raceId = ${race_id}`;
+    const query = `SELECT athletes.firstName, athletes.lastName, athletes.id FROM athletes JOIN registeredAthletes ON athletes.id = registeredAthletes.athleteId WHERE registeredAthletes.raceId = ${race_id}`;
     db.query(query, (err, results) => {
       if (err) {
         throw err;
       }
       if (results.length === 0) {
-        res
-          .status(404)
-          .json({
-            message: "Race not found or no currently registered racers",
-          });
+        res.status(404).json({
+          message: "Race not found or no currently registered racers",
+        });
       } else {
         res.json({ registeredRacers: results });
       }
