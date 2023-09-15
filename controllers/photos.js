@@ -7,7 +7,7 @@ const validateSession = require("../middleware/validate-session");
 
 router.get("/view-all", async (req, res) => {
   try {
-    console.log("View All Here");
+    
     const sql = `SELECT * FROM gomot1_july_cohort.photos`;
     db.query(sql, (err, results) => {
       if (err) {
@@ -56,12 +56,13 @@ router.get("/view/:athleteId", async (req, res) => {
   }
 });
 
-router.get("/search/:raceId", async (req, res) => {
+router.get("/search/:raceName", async (req, res) => {
   try {
     console.log("View by Race ID Here");
-    const raceId = req.params.raceId;
-    const sql = `SELECT * FROM gomot1_july_cohort.photos WHERE raceId = ?`;
-    db.query(sql, [raceId], (err, results) => {
+    const raceName = req.params.raceName;
+    const sql = `SELECT * FROM gomot1_july_cohort.photos WHERE LOWER(raceName) = ?`;
+    
+    db.query(sql, [raceName.replaceAll("-", " ").toLowerCase()], (err, results) => {
       if (err) {
         console.error("SQL Error:", err);
         res.status(500).json({
