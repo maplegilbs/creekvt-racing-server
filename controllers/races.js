@@ -50,6 +50,7 @@ router.post("/new", async (req, res) => {
   try {
     const {
       name,
+      year,
       difficulty,
       location,
       numberOfLaps,
@@ -64,9 +65,10 @@ router.post("/new", async (req, res) => {
       affiliatedOrganization,
     } = req.body;
     db.query(
-      `INSERT INTO races(name, difficulty, location, numberOfLaps, format, date, startTime, putIn, takeOut, fallBackDate, gauges, organizerContact, affiliatedOrganization) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      `INSERT INTO races(name, year, difficulty, location, numberOfLaps, format, date, startTime, putIn, takeOut, fallBackDate, gauges, organizerContact, affiliatedOrganization) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       [
         name,
+        year,
         difficulty,
         location,
         numberOfLaps, 
