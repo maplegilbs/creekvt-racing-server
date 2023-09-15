@@ -1,6 +1,8 @@
 const router = require("express").Router();
 const jwt = require("jsonwebtoken");
 const db = require("../db");
+const adminSession = require("../middleware/admin-session");
+const validateSession = require("../middleware/validate-session");
 
 // View All Endpoint
 router.get("/view-all", async (req, res) => {
@@ -25,7 +27,9 @@ router.get("/view-all", async (req, res) => {
 router.get("/view-by-name/:name", async (req, res) => {
   try {
     const { name } = req.params;
-    const query = `SELECT * FROM raceResults WHERE LOWER(raceName) = "${name.replaceAll("-", " ").toLowerCase()}"`;
+    const query = `SELECT * FROM raceResults WHERE LOWER(raceName) = "${name
+      .replaceAll("-", " ")
+      .toLowerCase()}"`;
     console.log(query);
     db.query(query, (err, results) => {
       if (err) {
@@ -103,7 +107,7 @@ router.get("/view-by-athlete/:athlete_name", async (req, res) => {
 });
 
 // Add Results
-router.post("/new", async (req, res) => {
+router.post("/new", adminSession, async (req, res) => {
   try {
     const {
       raceName,
@@ -113,6 +117,7 @@ router.post("/new", async (req, res) => {
       lastName,
       email,
       gender,
+      age,
       payment,
       acaMember,
       raceCategory,
@@ -132,6 +137,7 @@ router.post("/new", async (req, res) => {
         lastName,
         email,
         gender,
+        age,
         payment,
         acaMember,
         raceCategory,
@@ -141,7 +147,7 @@ router.post("/new", async (req, res) => {
         fastestLap,
         lap1,
         lap2,
-        athleteId) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+        athleteId) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       [
         raceName,
         year,
@@ -150,6 +156,7 @@ router.post("/new", async (req, res) => {
         lastName,
         email,
         gender,
+        age,
         payment,
         acaMember,
         raceCategory,
@@ -193,5 +200,95 @@ router.get("/hall-of-champions/:year", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+// Delete Results Endpoint
+router.delete("/delete/:year/:last_name", adminSession, async (req, res) => {
+  try {
+    const { year, last_name } = req.params;
+    const query = `DELETE FROM raceResults WHERE year = ${year} AND LOWER(lastName) = '${last_name.toLowerCase()}'`;
+    db.query(query, (err, results) => {
+      if (err) {
+        throw err;
+      }
+      if (results.length === 0) {
+        res.status(404).json({ message: "No data found." });
+      } else {
+        res.json({ message: "Result row deleted." });
+      }
+    });
+  } catch {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Update Results Endpoint
+router.patch("/update/:race_year/:last_name", adminSession, async (req, res) => {
+  try {
+    const {
+      raceName,
+      year,
+      place,
+      firstName,
+      lastName,
+      email,
+      gender,
+      age,
+      payment,
+      acaMember,
+      raceCategory,
+      partner1Name,
+      bibNumber,
+      time,
+      fastestLap,
+      lap1,
+      lap2,
+      athleteId,
+    } = req.body;
+    const { race_year, last_name } = req.params;
+    let updates = [];
+    Object.keys(req.body).forEach((key) => {
+      updates.push(`${key} = "${req.body[key]}"`);
+    });
+    if (updates.length > 0) {
+      if (updates.length > 1) {
+        db.query(
+          `UPDATE raceResults SET
+      ${updates.join(", ")}
+        WHERE year = ? AND LOWER(lastName) = ?`,
+          [race_year, last_name.toLowerCase()],
+          (error, results, fields) => {
+            if (error) {
+              throw Error(error);
+            }
+            console.log(results);
+          }
+        );
+        res.json({
+          message: "Results Updated",
+        });
+      } else {
+        db.query(
+          `UPDATE raceResults SET
+      ${updates.join(" ")}
+        WHERE year = ? AND LOWER(lastName) = ?`,
+          [race_year, last_name.toLowerCase()],
+          (error, results, fields) => {
+            if (error) {
+              throw Error(error);
+            }
+            console.log(results);
+          }
+        );
+        res.json({
+          message: "Results Updated",
+        });
+      }
+    } else {
+      res.status(404).json({ message: "No data given." });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+})
 
 module.exports = router;
