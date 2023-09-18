@@ -33,10 +33,6 @@ router.get("/view/:name", async (req, res) => {
       "-",
       " "
     )}"`;
-    const query = `SELECT * FROM races WHERE LOWER(name) = "${name.replaceAll(
-      "-",
-      " "
-    )}"`;
     db.query(query, (err, results) => {
       if (err) {
         throw err;
@@ -198,7 +194,7 @@ router.post("/register-existing/:race_id/:athlete_id", async (req, res) => {
   try {
     const { race_id, athlete_id } = req.params;
     const { category, ACA } = req.body;
-    const checkSQL = `SELECT * FROM athletes WHERE id = ${athlete_id}`
+    const checkSQL = `SELECT * FROM athletes WHERE id = ${athlete_id}`;
     db.query(checkSQL, (error, results, fields) => {
       if (error) {
         throw Error(error);
@@ -208,15 +204,25 @@ router.post("/register-existing/:race_id/:athlete_id", async (req, res) => {
         INSERT INTO registeredAthletes (raceId, athleteId, firstName, lastName, age, email, phone, category, ACA) VALUES (?,?,?,?,?,?,?,?,?)`;
         db.query(
           query,
-          [race_id, athlete_id, results[0].firstName, results[0].lastName, results[0].age, results[0].email, results[0].phone, category, ACA],
+          [
+            race_id,
+            athlete_id,
+            results[0].firstName,
+            results[0].lastName,
+            results[0].age,
+            results[0].email,
+            results[0].phone,
+            category,
+            ACA,
+          ],
           (error, result, fields) => {
             if (error) {
               throw Error(error);
             }
-    
+
             // Get the ID of the newly inserted registered athlete.
             const userId = result.insertId;
-    
+
             // Respond to the client with a success message.
             res.json({
               message: "Athlete successfully registered for race.",
@@ -225,10 +231,9 @@ router.post("/register-existing/:race_id/:athlete_id", async (req, res) => {
         );
       } else {
         // If the ID doesn't exist in another_table, return an error response
-        res.status(404).send('ID not found in another_table');
+        res.status(404).send("ID not found in another_table");
       }
     });
-    
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -250,7 +255,7 @@ router.post("/register-new/:race_id", async (req, res) => {
       }
     );
     res.json({
-      message: "Athlete Successfully Registered for Race"
+      message: "Athlete Successfully Registered for Race",
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -332,7 +337,7 @@ router.patch("/update-racers/:race_id/:athlete_email", async (req, res) => {
       email,
       phone,
       category,
-      ACA
+      ACA,
     } = req.body;
     let updates = [];
     Object.keys(req.body).forEach((key) => {
