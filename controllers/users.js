@@ -9,12 +9,12 @@ const adminSession = require("../middleware/admin-session");
 //user registration
 router.post("/register", async (req, res) => {
   try {
-    const { firstName, lastName, email, age, gender, isAdmin, password } =
+    const { firstName, lastName, email, phone, age, gender, isAdmin, password } =
       req.body;
     const hashedPassword = await bcrypt.hashSync(password, 10);
     const result = db.query(
-      `insert into athletes(firstName, lastName, email, age, gender, isAdmin, password) VALUES (?,?,?,?,?,?,?)`,
-      [firstName, lastName, email, age, gender, isAdmin, hashedPassword],
+      `insert into athletes(firstName, lastName, email, age, gender, isAdmin, password) VALUES (?,?,?,?,?,?,?,?)`,
+      [firstName, lastName, email, phone, age, gender, isAdmin, hashedPassword],
       (error, results, fields) => {
         if (error) {
           throw Error(error);
