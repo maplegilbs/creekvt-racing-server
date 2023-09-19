@@ -29,10 +29,9 @@ router.get("/view-all", async (req, res) => {
 router.get("/view/:name", async (req, res) => {
   try {
     const { name } = req.params;
-    const query = `SELECT * FROM races WHERE LOWER(name) = "${name.replaceAll(
-      "-",
-      " "
-    )}"`;
+    const query = `SELECT * FROM races WHERE LOWER(name) = "${name
+      .replaceAll("-", " ")
+      .toLowerCase()}"`;
     db.query(query, (err, results) => {
       if (err) {
         throw err;
@@ -201,7 +200,7 @@ router.post("/register-existing/:race_id/:athlete_id", async (req, res) => {
       }
       if (results.length > 0) {
         const query = `
-        INSERT INTO registeredAthletes (raceId, athleteId, firstName, lastName, age, email, phone, category, ACA) VALUES (?,?,?,?,?,?,?,?,?)`;
+        INSERT INTO registeredAthletes (raceId, athleteId, firstName, lastName, DOB, email, phone, category, ACA) VALUES (?,?,?,?,?,?,?,?,?)`;
         db.query(
           query,
           [
@@ -209,7 +208,7 @@ router.post("/register-existing/:race_id/:athlete_id", async (req, res) => {
             athlete_id,
             results[0].firstName,
             results[0].lastName,
-            results[0].age,
+            results[0].DOB,
             results[0].email,
             results[0].phone,
             category,
@@ -219,18 +218,14 @@ router.post("/register-existing/:race_id/:athlete_id", async (req, res) => {
             if (error) {
               throw Error(error);
             }
-
-            // Get the ID of the newly inserted registered athlete.
             const userId = result.insertId;
 
-            // Respond to the client with a success message.
             res.json({
               message: "Athlete successfully registered for race.",
             });
           }
         );
       } else {
-        // If the ID doesn't exist in another_table, return an error response
         res.status(404).send("ID not found in another_table");
       }
     });
@@ -242,11 +237,11 @@ router.post("/register-existing/:race_id/:athlete_id", async (req, res) => {
 // Register New Athlete Endpoint
 router.post("/register-new/:race_id", async (req, res) => {
   try {
-    const { firstName, lastName, age, email, phone, category, ACA } = req.body;
+    const { firstName, lastName, DOB, email, phone, category, ACA } = req.body;
     const { race_id } = req.params;
     db.query(
-      `INSERT INTO registeredAthletes(raceId, firstName, lastName, age, email, phone, category, ACA) VALUES (?,?,?,?,?,?,?,?)`,
-      [race_id, firstName, lastName, age, email, phone, category, ACA],
+      `INSERT INTO registeredAthletes(raceId, firstName, lastName, DOB, email, phone, category, ACA) VALUES (?,?,?,?,?,?,?,?)`,
+      [race_id, firstName, lastName, DOB, email, phone, category, ACA],
       (error, results, fields) => {
         if (error) {
           throw Error(error);
@@ -305,24 +300,28 @@ router.get("/view-registered-races/:race_id/:athlete_id", async (req, res) => {
 });
 
 // Delete Registered Racer Endpoint
-router.delete("/delete-athlete/:race_id/:email", adminSession, async (req, res) => {
-  try {
-    const { race_id, email } = req.params;
-    const query = `DELETE FROM registeredAthletes WHERE raceId = ${race_id} AND email ='${email}'`;
-    db.query(query, (err, results) => {
-      if (err) {
-        throw err;
-      }
-      if (results.length === 0) {
-        res.status(404).json({ message: "Athlete not found." });
-      } else {
-        res.json({ message: "Athlete deleted." });
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+router.delete(
+  "/delete-athlete/:race_id/:email",
+  adminSession,
+  async (req, res) => {
+    try {
+      const { race_id, email } = req.params;
+      const query = `DELETE FROM registeredAthletes WHERE raceId = ${race_id} AND LOWER(email) ='${email.toLowerCase()}'`;
+      db.query(query, (err, results) => {
+        if (err) {
+          throw err;
+        }
+        if (results.length === 0) {
+          res.status(404).json({ message: "Athlete not found." });
+        } else {
+          res.json({ message: "Athlete deleted." });
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
   }
-});
+);
 
 // Update Registered Racers
 router.patch("/update-racers/:race_id/:athlete_email", async (req, res) => {
@@ -333,7 +332,7 @@ router.patch("/update-racers/:race_id/:athlete_email", async (req, res) => {
       athleteId,
       firstName,
       lastName,
-      age,
+      DOB,
       email,
       phone,
       category,
