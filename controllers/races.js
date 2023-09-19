@@ -337,7 +337,6 @@ router.patch("/update-racers/:race_id/:athlete_email", async (req, res) => {
       athleteId,
       firstName,
       lastName,
-      age,
       email,
       phone,
       category,
