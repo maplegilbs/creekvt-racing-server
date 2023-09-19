@@ -200,7 +200,7 @@ router.post("/register-existing/:race_id/:athlete_id", async (req, res) => {
       }
       if (results.length > 0) {
         const query = `
-        INSERT INTO registeredAthletes (raceId, athleteId, firstName, lastName, age, email, phone, category, ACA) VALUES (?,?,?,?,?,?,?,?,?)`;
+        INSERT INTO registeredAthletes (raceId, athleteId, firstName, lastName, DOB, email, phone, category, ACA) VALUES (?,?,?,?,?,?,?,?,?)`;
         db.query(
           query,
           [
@@ -208,7 +208,7 @@ router.post("/register-existing/:race_id/:athlete_id", async (req, res) => {
             athlete_id,
             results[0].firstName,
             results[0].lastName,
-            results[0].age,
+            results[0].DOB,
             results[0].email,
             results[0].phone,
             category,
@@ -218,18 +218,14 @@ router.post("/register-existing/:race_id/:athlete_id", async (req, res) => {
             if (error) {
               throw Error(error);
             }
-
-            // Get the ID of the newly inserted registered athlete.
             const userId = result.insertId;
 
-            // Respond to the client with a success message.
             res.json({
               message: "Athlete successfully registered for race.",
             });
           }
         );
       } else {
-        // If the ID doesn't exist in another_table, return an error response
         res.status(404).send("ID not found in another_table");
       }
     });
