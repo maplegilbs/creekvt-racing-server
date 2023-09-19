@@ -305,10 +305,10 @@ router.get("/view-registered-races/:race_id/:athlete_id", async (req, res) => {
 });
 
 // Delete Registered Racer Endpoint
-router.delete("delete-athlete/athlete_id", adminSession, async (req, res) => {
+router.delete("/delete-athlete/:athlete_id", adminSession, async (req, res) => {
   try {
     const { athlete_id } = req.params;
-    const query = `DELETE FROM registeredRacers WHERE athleteId = ${athlete_id}`;
+    const query = `DELETE FROM registeredAthletes WHERE athleteId = ${athlete_id}`;
     db.query(query, (err, results) => {
       if (err) {
         throw err;
