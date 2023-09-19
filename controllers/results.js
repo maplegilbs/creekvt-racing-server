@@ -50,7 +50,9 @@ router.get("/view-by-name/:name", async (req, res) => {
 router.get("/view-by-year/:name/:year", async (req, res) => {
   try {
     const { name, year } = req.params;
-    const query = `SELECT * FROM raceResults WHERE LOWER(raceName) = '${name.toLowerCase()}' AND year = '${year}'`;
+    const query = `SELECT * FROM raceResults WHERE LOWER(raceName) = '${name
+      .replaceAll("-", " ")
+      .toLowerCase()}' AND year = '${year}'`;
     db.query(query, (err, results) => {
       if (err) {
         throw err;
@@ -70,7 +72,9 @@ router.get("/view-by-year/:name/:year", async (req, res) => {
 router.get("/view-by-category/:name/:category", async (req, res) => {
   try {
     const { name, category } = req.params;
-    const query = `SELECT * FROM raceResults WHERE LOWER(raceName) = '${name.toLowerCase()}' AND LOWER(raceCategory) = '${category.toLowerCase()}'`;
+    const query = `SELECT * FROM raceResults WHERE LOWER(raceName) = '${name
+      .replaceAll("-", " ")
+      .toLowerCase()}' AND LOWER(raceCategory) = '${category.replaceAll("-", " ").toLowerCase()}'`;
     db.query(query, (err, results) => {
       if (err) {
         throw err;

@@ -6,15 +6,24 @@ const db = require("../db");
 require("dotenv").config();
 const adminSession = require("../middleware/admin-session");
 
-//user registration
+// User Registration
 router.post("/register", async (req, res) => {
   try {
-    const { firstName, lastName, email, phone, age, gender, isAdmin, password } =
-      req.body;
-    const hashedPassword = await bcrypt.hashSync(password, 10);
-    const result = db.query(
-      `insert into athletes(firstName, lastName, email, age, gender, isAdmin, password) VALUES (?,?,?,?,?,?,?,?)`,
-      [firstName, lastName, email, phone, age, gender, isAdmin, hashedPassword],
+    const {
+      firstName,
+      lastName,
+      email,
+      phone,
+      DOB,
+      gender,
+      isAdmin,
+      password,
+    } = req.body;
+    console.log(typeof phone);
+    const hashedPassword = bcrypt.hashSync(password, 10);
+    db.query(
+      `INSERT INTO athletes(firstName, lastName, email, phone, DOB, gender, isAdmin, password) VALUES (?,?,?,?,?,?,?,?)`,
+      [firstName, lastName, email, phone, DOB, gender, isAdmin, hashedPassword],
       (error, results, fields) => {
         if (error) {
           throw Error(error);
@@ -40,6 +49,7 @@ router.post("/register", async (req, res) => {
   }
 });
 
+// User Login
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -88,6 +98,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// User Delete
 router.delete("/delete/:email", adminSession, async (req, res) => {
   try {
     const deletedEmail = req.params.email;
@@ -112,50 +123,61 @@ router.delete("/delete/:email", adminSession, async (req, res) => {
   }
 });
 
+// User Update
 router.patch("/update/:id", adminSession, async (req, res) => {
   try {
-    const id = req.params.id;
-    const { firstName, lastName, age, gender } = req.body;
-    let updateFields = [];
-    let updateValues = [];
-
-    if (firstName !== undefined) {
-      updateFields.push("firstName = ?");
-      updateValues.push(firstName);
-    }
-    if (lastName !== undefined) {
-      updateFields.push("lastName = ?");
-      updateValues.push(lastName);
-    }
-    if (age !== undefined) {
-      updateFields.push("age = ?");
-      let ageValue = parseInt(age);
-      updateValues.push(ageValue);
-    }
-    if (gender !== undefined) {
-      updateFields.push("gender = ?");
-      updateValues.push(gender);
-    }
-    if (updateFields.length === 0) {
-      return res.status(400).json({ message: "No fields to update" });
-    }
-    let idValue = parseInt(id);
-    updateValues.push(idValue);
-    let updateQuery = `UPDATE athletes SET ${updateFields.join(
-      ", "
-    )} WHERE id = ?`;
-    db.query(updateQuery, updateValues, (error, results, fields) => {
-      if (error) {
-        throw Error(error);
-      }
-      if (results.length === 0) {
-        res.status(404).json({ message: "Athlete not found" });
+    const { id } = req.params;
+    const {
+      firstName,
+      lastName,
+      email,
+      phone,
+      DOB,
+      gender,
+      isAdmin,
+      password,
+    } = req.body;
+    let updates = [];
+    Object.keys(req.body).forEach((key) => {
+      updates.push(`${key} = "${req.body[key]}"`);
+    });
+    if (updates.length > 0) {
+      if (updates.length > 1) {
+        db.query(
+          `UPDATE athletes SET
+      ${updates.join(", ")}
+        WHERE id = ?`,
+          [id],
+          (error, results, fields) => {
+            if (error) {
+              throw Error(error);
+            }
+            console.log(results);
+          }
+        );
+        res.json({
+          message: "Athlete Information Updated",
+        });
       } else {
-        res.status(200).json({
-          message: "Athlete updated successfully",
+        db.query(
+          `UPDATE athletes SET
+      ${updates.join(" ")}
+        WHERE id = ?`,
+          [id],
+          (error, results, fields) => {
+            if (error) {
+              throw Error(error);
+            }
+            console.log(results);
+          }
+        );
+        res.json({
+          message: "Athlete Information Updated",
         });
       }
-    });
+    } else {
+      res.status(404).json({ message: "No data given." });
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
