@@ -266,7 +266,7 @@ router.post("/register-new/:race_id", async (req, res) => {
 router.get("/view-registered-athletes/:race_id", async (req, res) => {
   try {
     const { race_id } = req.params;
-    const query = `SELECT athletes.firstName, athletes.lastName, athletes.id FROM athletes JOIN registeredAthletes ON athletes.id = registeredAthletes.athleteId WHERE registeredAthletes.raceId = ${race_id}`;
+    const query = `SELECT * FROM registeredAthletes WHERE raceId = ${race_id}`;
     db.query(query, (err, results) => {
       if (err) {
         throw err;
@@ -305,24 +305,28 @@ router.get("/view-registered-races/:race_id/:athlete_id", async (req, res) => {
 });
 
 // Delete Registered Racer Endpoint
-router.delete("/delete-athlete/:athlete_id", adminSession, async (req, res) => {
-  try {
-    const { athlete_id } = req.params;
-    const query = `DELETE FROM registeredAthletes WHERE athleteId = ${athlete_id}`;
-    db.query(query, (err, results) => {
-      if (err) {
-        throw err;
-      }
-      if (results.length === 0) {
-        res.status(404).json({ message: "Athlete not found." });
-      } else {
-        res.json({ message: "Athlete deleted." });
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+router.delete(
+  "/delete-athlete/:race_id/:email",
+  adminSession,
+  async (req, res) => {
+    try {
+      const { race_id, email } = req.params;
+      const query = `DELETE FROM registeredAthletes WHERE raceId = ${race_id} AND email ='${email}'`;
+      db.query(query, (err, results) => {
+        if (err) {
+          throw err;
+        }
+        if (results.length === 0) {
+          res.status(404).json({ message: "Athlete not found." });
+        } else {
+          res.json({ message: "Athlete deleted." });
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
   }
-});
+);
 
 // Update Registered Racers
 router.patch("/update-racers/:race_id/:athlete_email", async (req, res) => {
