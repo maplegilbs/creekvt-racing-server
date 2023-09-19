@@ -245,7 +245,7 @@ router.post("/register-new/:race_id", async (req, res) => {
     const { firstName, lastName, age, email, phone, category, ACA } = req.body;
     const { race_id } = req.params;
     db.query(
-      `INSERT INTO registeredAthletes(raceId, firstName, lastName, age, email, phone, category, ACA) VALUES (?,?,?,?,?,?,?,?)`,
+      `INSERT INTO registeredAthletes(raceId, firstName, lastName, DOB, email, phone, category, ACA) VALUES (?,?,?,?,?,?,?,?)`,
       [race_id, firstName, lastName, age, email, phone, category, ACA],
       (error, results, fields) => {
         if (error) {
