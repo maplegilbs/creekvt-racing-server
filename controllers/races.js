@@ -266,7 +266,7 @@ router.post("/register-new/:race_id", async (req, res) => {
 router.get("/view-registered-athletes/:race_id", async (req, res) => {
   try {
     const { race_id } = req.params;
-    const query = `SELECT athletes.firstName, athletes.lastName, athletes.id FROM athletes JOIN registeredAthletes ON athletes.id = registeredAthletes.athleteId WHERE registeredAthletes.raceId = ${race_id}`;
+    const query = `SELECT * FROM registeredAthletes WHERE raceId = ${race_id}`;
     db.query(query, (err, results) => {
       if (err) {
         throw err;
