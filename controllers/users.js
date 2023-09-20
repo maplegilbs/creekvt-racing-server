@@ -19,7 +19,6 @@ router.post("/register", async (req, res) => {
       isAdmin,
       password,
     } = req.body;
-    console.log(typeof phone);
     const hashedPassword = bcrypt.hashSync(password, 10);
     db.query(
       `INSERT INTO athletes(firstName, lastName, email, phone, DOB, gender, isAdmin, password) VALUES (?,?,?,?,?,?,?,?)`,

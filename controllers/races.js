@@ -200,7 +200,7 @@ router.post("/register-existing/:race_id/:athlete_id", async (req, res) => {
       }
       if (results.length > 0) {
         const query = `
-        INSERT INTO registeredAthletes (raceId, athleteId, firstName, lastName, DOB, email, phone, category, ACA) VALUES (?,?,?,?,?,?,?,?,?)`;
+        INSERT INTO registeredAthletes (raceId, athleteId, firstName, lastName, DOB, location, email, phone, category, ACA) VALUES (?,?,?,?,?,?,?,?,?)`;
         db.query(
           query,
           [
@@ -209,6 +209,7 @@ router.post("/register-existing/:race_id/:athlete_id", async (req, res) => {
             results[0].firstName,
             results[0].lastName,
             results[0].DOB,
+            results[0].location,
             results[0].email,
             results[0].phone,
             category,
@@ -235,13 +236,13 @@ router.post("/register-existing/:race_id/:athlete_id", async (req, res) => {
 });
 
 // Register New Athlete Endpoint
-router.post("/register-new/:race_id", async (req, res) => {
+router.post("/registration", async (req, res) => {
   try {
-    const { firstName, lastName, DOB, email, phone, category, ACA } = req.body;
-    const { race_id } = req.params;
+    const { raceId, firstName, lastName, DOB, location, email, phone, category, ACA } = req.body;
+    const registeredAthlete = [raceId, firstName, lastName, DOB, email, phone, category, ACA]
     db.query(
-      `INSERT INTO registeredAthletes(raceId, firstName, lastName, DOB, email, phone, category, ACA) VALUES (?,?,?,?,?,?,?,?)`,
-      [race_id, firstName, lastName, DOB, email, phone, category, ACA],
+      `INSERT INTO registeredAthletes(raceId, firstName, lastName, DOB, location, email, phone, category, ACA) VALUES (?,?,?,?,?,?,?,?, ?)`,
+      registeredAthlete,
       (error, results, fields) => {
         if (error) {
           throw Error(error);
@@ -250,7 +251,7 @@ router.post("/register-new/:race_id", async (req, res) => {
       }
     );
     res.json({
-      message: "Athlete Successfully Registered for Race",
+      message: "Athlete Successfully Registered for Race", athleteInfo: registeredAthlete
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -333,6 +334,7 @@ router.patch("/update-racers/:race_id/:athlete_email", async (req, res) => {
       firstName,
       lastName,
       DOB,
+      location,
       email,
       phone,
       category,
