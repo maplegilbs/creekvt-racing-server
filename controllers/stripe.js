@@ -7,11 +7,7 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
     origin: "http://localhost:3000",
   })
 );
-
-
-  
-  router.post("/create-checkout-session/:id", async (req, res) => {
-    
+  router.post("/create-checkout-session/:id", async (req, res) => {    
     try {
       const {id} = req.params
       const query = `SELECT price, name FROM races WHERE id = ${id}`;
