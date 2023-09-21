@@ -239,10 +239,9 @@ router.post("/register-existing/:race_id/:athlete_id", async (req, res) => {
 router.post("/registration", async (req, res) => {
   try {
     const { raceId, firstName, lastName, DOB, location, email, phone, category, ACA } = req.body;
-    const registeredAthlete = [raceId, firstName, lastName, DOB, email, phone, category, ACA]
     db.query(
-      `INSERT INTO registeredAthletes(raceId, firstName, lastName, DOB, location, email, phone, category, ACA) VALUES (?,?,?,?,?,?,?,?, ?)`,
-      registeredAthlete,
+      `INSERT INTO registeredAthletes(raceId, firstName, lastName, DOB, location, email, phone, category, ACA) VALUES (?,?,?,?,?,?,?,?,?)`,
+      [raceId, firstName, lastName, DOB, location, email, phone, category, ACA],
       (error, results, fields) => {
         if (error) {
           throw Error(error);
@@ -251,7 +250,7 @@ router.post("/registration", async (req, res) => {
       }
     );
     res.json({
-      message: "Athlete Successfully Registered for Race", athleteInfo: registeredAthlete
+      message: "Athlete Successfully Registered for Race"
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
