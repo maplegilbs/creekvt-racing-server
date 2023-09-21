@@ -53,7 +53,7 @@ router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     db.query(
-      `SELECT id, email, password, firstName, isAdmin FROM athletes WHERE LOWER(email) = ?`,
+      `SELECT * FROM athletes WHERE LOWER(email) = ?`,
       [email.toLowerCase()],
       (error, results, fields) => {
         if (error) {
@@ -81,12 +81,14 @@ router.post("/login", async (req, res) => {
             );
             let storedFirstName = results[0].firstName;
             let storedAdminCred = results[0].isAdmin;
+            let loginInfo = results[0]
             console.log(results);
             res.json({
               message: "login successful.",
               token,
               storedFirstName,
               storedAdminCred,
+              loginInfo,
             });
           }
         }
