@@ -60,14 +60,15 @@ router.post("/login", async (req, res) => {
           throw Error(error);
         }
         if (results.length === 0) {
-          return res.status(401).json({ message: "invalid email or password" });
+          return res.status(401).json({ message: "Invalid Credentials"});
         } else {
           const isPasswordAMatch = bcrypt.compareSync(
             password,
             results[0].password
           );
           if (!isPasswordAMatch) {
-            return res.status(401).json({ message: "Invalid password" });
+            return res.status(401).json({ message: "Incorrect Password" });
+            
           } else {
             let token = jwt.sign(
               {

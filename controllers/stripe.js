@@ -33,6 +33,7 @@ router.post("/create-checkout-session/:id", async (req, res) => {
     });
       } else {
         res.status(409).json({ message: "An athlete with this email is already registered for this race!" })
+        
       }
     });
     
