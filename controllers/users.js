@@ -35,11 +35,16 @@ router.post("/register", async (req, res) => {
             expiresIn: 60 * 60 * 72,
           }
         );
+        let storedFirstName = firstName;
+        let storedAdminCred = isAdmin;
         res.json({
           message: "User Registration Success.",
           user: `${firstName} ${lastName}`,
           token,
           isAdmin,
+          storedFirstName,
+          storedAdminCred,
+          loginInfo,
         });
       }
     );
@@ -60,7 +65,7 @@ router.post("/login", async (req, res) => {
           throw Error(error);
         }
         if (results.length === 0) {
-          return res.status(401).json({ message: "Invalid Credentials"});
+          return res.status(401).json({ message: "Invalid Credentials" });
         } else {
           const isPasswordAMatch = bcrypt.compareSync(
             password,
@@ -68,7 +73,6 @@ router.post("/login", async (req, res) => {
           );
           if (!isPasswordAMatch) {
             return res.status(401).json({ message: "Incorrect Password" });
-            
           } else {
             let token = jwt.sign(
               {
@@ -82,7 +86,7 @@ router.post("/login", async (req, res) => {
             );
             let storedFirstName = results[0].firstName;
             let storedAdminCred = results[0].isAdmin;
-            let loginInfo = results[0]
+            let loginInfo = results[0];
             console.log(results);
             res.json({
               message: "login successful.",
