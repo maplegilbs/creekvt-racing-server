@@ -44,7 +44,6 @@ router.post("/register", async (req, res) => {
           isAdmin,
           storedFirstName,
           storedAdminCred,
-          loginInfo,
         });
       }
     );
