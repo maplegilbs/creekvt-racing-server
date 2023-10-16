@@ -43,14 +43,21 @@ router.post('/login', async (req, res) => {
         else {
             let userName = returnedUser[0][0].userName;
             let name = returnedUser[0][0].name;
+            let role = returnedUser[0][0].role;
             let races = JSON.parse(returnedUser[0][0].races)
-            const token = jwt.sign({userName, name, races}, process.env.JWT_SECRET)
+            const token = jwt.sign({userName, name, races, role}, process.env.JWT_SECRET)
             res.status(200).json(token)
         }
     } catch (error) {
         console.log(error)
         res.status(500).json({ "message": `There was an error fetching the data ${error}` })
     }
+})
+
+router.get('/userInfo', authenticateUser, async (req, res) => {
+    let name = req.name;
+    let races = req.races;
+    res.status(200).json({name, races})
 })
 
 

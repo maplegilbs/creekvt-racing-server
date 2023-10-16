@@ -6,9 +6,11 @@ async function authenticateUser(req, res, next) {
             let token = req.headers.authorization.split(' ')[1];
             let decodedToken = await jwt.verify(token, process.env.JWT_SECRET);
             req.userName = decodedToken.userName
+            req.name = decodedToken.name
+            req.role = decodedToken.role
             req.races = decodedToken.races
-            if (!req.userName) {
-                throw new Error("Username not found")
+            if (!req.userName || !req.role) {
+                throw new Error("Username / Role not included in auth info")
             }
             next()
         }

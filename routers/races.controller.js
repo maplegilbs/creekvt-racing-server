@@ -31,14 +31,25 @@ router.get('/:raceName', async (req, res) => {
     }
 })
 
-
+//needs to account for all different input data
 router.patch('/:raceName', authenticateUser, async(req, res)=>{
-    let modifiedRaces = req.races.map(race => race.split(' ').join('').toLowerCase())
-    if(!modifiedRaces.includes(req.params.raceName)){
-        res.status(403).json({"message": "Permission to modify selected race denied"})
-    }
-    else {
-        res.send(modifiedRaces)
+    console.log('patch', req.body)
+    try {
+        let modifiedRaces = req.races.map(race => race.split(' ').join('').toLowerCase())
+        if(!modifiedRaces.includes(req.params.raceName)){
+            res.status(403).json({"message": "Permission to modify selected race denied"})
+        }
+        else {
+            const name = req.body.name;
+            const shortDescription = req.body.shortDescription
+            const queryStatement = `update race_details set shortDescription = "${shortDescription}" where name = "${name}" `
+            const updatedRace = await connection.query(queryStatement)
+            console.log(updatedRace)
+            res.status(200).json(updatedRace)
+        }
+    } catch (error) {
+        console.error(`There was an error updating the race ${error}`);
+        res.status(500).json({"message": `There was an error updating the data ${error}`})
     }
 
 })
