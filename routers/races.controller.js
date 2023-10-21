@@ -31,7 +31,7 @@ router.get('/:raceName', async (req, res) => {
     }
 })
 
-//needs to account for all different input data
+//needs to account for all different input data - checking typeof for objects
 router.patch('/:raceName', authenticateUser, async (req, res) => {
     console.log('patch', req.body)
     try {
