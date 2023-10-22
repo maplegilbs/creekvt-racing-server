@@ -11,11 +11,24 @@ const connection = mysql.createPool({
 }).promise();
 
 
-//need to protect this route so only admins can get emails
+//front end route for pages - be sure to only return racer's name, partners and category
 router.get('/:racename', async (req, res) => {
     const queryStatement = `select * from registered_racers where lower(replace(raceName," ", "")) = "${req.params.racename}"`
     let returnedRacers = await connection.query(queryStatement)
     res.status(200).json(returnedRacers)
+})
+
+//get route for adminDashboard
+router.get('/admin/:racename', authenticateUser, async (req, res)=>{
+    try {
+        // const queryStatement = `select registered_racers.*, race_details.racerCategories from registered_racers inner join race_details on registered_racers.raceName = race_details.name where lower(replace(raceName," ", "")) = "${req.params.racename}"`
+        const queryStatement = `select * from registered_racers where lower(replace(raceName," ", "")) = "${req.params.racename}"`
+        let returnedRacers = await connection.query(queryStatement)
+        res.status(200).json(returnedRacers)
+    } catch (error) {
+        console.error(`There was an error fetching racer data - provided params racename: ${req.params.racename}, racerId: ${req.params.racerId}.  Error: ${error}`);
+        res.status(500).json({ "message": `There was an error fetching the data ${error}` })
+    }
 })
 
 router.delete('/:racename/:racerId', authenticateUser, async (req, res) => {
