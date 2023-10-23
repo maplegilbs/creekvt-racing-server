@@ -31,13 +31,19 @@ router.get('/admin/:racename', authenticateUser, async (req, res)=>{
     }
 })
 
-router.delete('/:racename/:racerId', authenticateUser, async (req, res) => {
+router.delete('/:raceName/:racerId', authenticateUser, async (req, res) => {
     try {
-        const queryStatement = `delete from registered_racers where id = ${req.params.racerId}`
-        const deletedRacer = await connection.query(queryStatement)
-        res.status(200).json(deletedRacer[0])
+        let modifiedRaces = req.races.map(race => race.split(' ').join('').toLowerCase())
+        if (!modifiedRaces.includes(req.params.raceName)) {
+            res.status(403).json({ "message": "Permission to modify selected race denied" })
+        }
+        else {
+            const queryStatement = `delete from registered_racers where id = ${req.params.racerId}`
+            const deletedRacer = await connection.query(queryStatement)
+            res.status(200).json(deletedRacer[0])
+        }
     } catch (error) {
-        console.error(`There was an error deleting the racer - provided params racename: ${req.params.racename}, racerId: ${req.params.racerId}.  Error: ${error}`);
+        console.error(`There was an error deleting the racer - provided params raceName: ${req.params.raceName}, racerId: ${req.params.racerId}.  Error: ${error}`);
         res.status(500).json({ "message": `There was an error updating the data ${error}` })
     }
 })

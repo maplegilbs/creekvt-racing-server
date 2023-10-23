@@ -13,12 +13,81 @@ const connection = mysql.createPool({
 
 router.get("/:racename", async (req, res) => {
     try {
-        const queryStatement = `select * from map_info where lower(replace(raceName, " ", "")) = ${req.params.racename}`;
+        const queryStatement = `select * from map_info where lower(replace(raceName, " ", "")) = "${req.params.racename}"`;
         const mapData = await connection.query(queryStatement)
         res.status(200).json(mapData)
     } catch (error) {
-        console.error(`There was an error fetching racer data - provided params racename: ${req.params.racename}, racerId: ${req.params.racerId}.  Error: ${error}`);
+        console.error(`There was an error fetching racer data - provided params racename: ${req.params.racename}.  Error: ${error}`);
         res.status(500).json({ "message": `There was an error fetching the data ${error}` })
+    }
+})
+
+router.post("/:racename", authenticateUser, async (req, res) => {
+    try {
+        let columnNames = [];
+        let columnValues = [];
+        for (let propertyName in req.body) {
+            columnNames.push(propertyName)
+            columnValues.push(req.body[propertyName])
+        }
+        const queryStatement = `insert into map_info (${columnNames.join(', ')}) values(${columnNames.map(columnName => '?').join(', ')})`;
+        const addedMapData = await connection.query(queryStatement, columnValues)
+        res.status(200).json(addedMapData)
+    } catch (error) {
+        console.error(`There was an error fetching racer data - provided params racename: ${req.params.racename}.  Error: ${error}`);
+        res.status(500).json({ "message": `There was an error fetching the data ${error}` })
+    }
+})
+
+router.get("/mapOptions/:racename", async (req, res) => {
+    try {
+        const queryStatement = `select * from map_options where lower(replace(raceName, " ", "")) = "${req.params.racename}"`;
+        const mapData = await connection.query(queryStatement)
+        res.status(200).json(mapData)
+    } catch (error) {
+        console.error(`There was an error fetching racer data - provided params racename: ${req.params.racename}.  Error: ${error}`);
+        res.status(500).json({ "message": `There was an error fetching the data ${error}` })
+    }
+})
+
+router.delete("/:raceName/:locationId", authenticateUser, async (req, res) => {
+    try {
+        let modifiedRaces = req.races.map(race => race.split(' ').join('').toLowerCase())
+        if (!modifiedRaces.includes(req.params.raceName)) {
+            res.status(403).json({ "message": "Permission to modify selected race denied" })
+        }
+        else {
+            const queryStatement = `delete from map_info where id = ${req.params.locationId}`
+            const deletedLocation = await connection.query(queryStatement)
+            res.status(200).json(deletedLocation[0])
+        }
+    } catch (error) {
+        console.error(`There was an error deleting the location ${error}`);
+        res.status(500).json({ "message": `There was an error updating the data ${error}` })
+    }
+})
+
+//need to deal with null values
+router.patch('/:raceName/:locationId', authenticateUser, async (req, res) => {
+    try {
+        let modifiedRaces = req.races.map(race => race.split(' ').join('').toLowerCase())
+        if (!modifiedRaces.includes(req.params.raceName)) {
+            res.status(403).json({ "message": "Permission to modify selected race denied" })
+        }
+        else {
+            let updateInfoArray = []
+            for (let propertyName in req.body) {
+                console.log(`type: ${typeof req.body[propertyName]}: ${propertyName}`)
+                updateInfoArray.push(`${propertyName} = '${req.body[propertyName]}'`)
+            }
+            console.log(updateInfoArray.join(', '))
+            const queryStatement = `update map_info set ${updateInfoArray.join(', ')} where id = ${req.params.locationId}`
+            const updatedLocation = await connection.query(queryStatement)
+            res.status(200).json(updatedLocation[0])
+        }
+    } catch (error) {
+        console.error(`There was an error updating the location ${error}`);
+        res.status(500).json({ "message": `There was an error updating the data ${error}` })
     }
 })
 
