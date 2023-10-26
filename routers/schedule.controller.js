@@ -11,7 +11,7 @@ const connection = mysql.createPool({
     password: process.env.REMOTE_PASSWORD
 }).promise();
 
-//GET - Get the table format
+//GET - Get the table format -- PROTECTED
 router.get('/tableInfo', authenticateUser, async (req, res) => {
     try {
         const queryStatement = `describe race_schedule`
@@ -27,8 +27,8 @@ router.get('/tableInfo', authenticateUser, async (req, res) => {
 router.get("/:raceName", async (req, res) => {
     try {
         const queryStatement = `select * from race_schedule where lower(replace(raceName, " ", "")) = "${req.params.raceName}"`
-        const fetchedRaceData = await connection.query(queryStatement)
-        res.status(200).json(fetchedRaceData[0])
+        const returnedScheduleData = await connection.query(queryStatement)
+        res.status(200).json(returnedScheduleData[0])
     } catch (error) {
         console.error(`There was an error fetching the schedule data ${error} - params: ${req.params.raceName}`);
         res.status(500).json({ "message": `There was an error fetching the schedule data ${error}` })
@@ -40,7 +40,7 @@ router.post('/:raceName', authenticateUser, async (req, res) => {
     try {
         let modifiedRaces = req.races.map(race => race.split(' ').join('').toLowerCase())
         if (!modifiedRaces.includes(req.params.raceName)) res.status(403).json({ "message": "Permission to modify selected race denied" })
-        else{
+        else {
             let columnNames = [];
             let columnValues = [];
             for (let propertyName in req.body) {
@@ -48,8 +48,8 @@ router.post('/:raceName', authenticateUser, async (req, res) => {
                 columnValues.push(req.body[propertyName])
             }
             const queryStatement = `insert into race_schedule (${columnNames.join(', ')}) values(${columnNames.map(columnName => '?').join(', ')})`
-            const insertedRacer = await connection.query(queryStatement, columnValues)
-            res.status(200).json(insertedRacer[0])
+            const insertedScheduleItem = await connection.query(queryStatement, columnValues)
+            res.status(200).json(insertedScheduleItem[0])
         }
     } catch (error) {
         console.error(`There was an error updating the race ${error}`);
@@ -67,10 +67,8 @@ router.patch('/:raceName/:itemID', authenticateUser, async (req, res) => {
         else {
             let updateInfoArray = []
             for (let propertyName in req.body) {
-                console.log(`type: ${typeof req.body[propertyName]}: ${propertyName}`)
                 updateInfoArray.push(`${propertyName} = '${req.body[propertyName]}'`)
             }
-            console.log(updateInfoArray.join(', '))
             const queryStatement = `update race_schedule set ${updateInfoArray.join(', ')} where id = ${req.params.itemID}`
             const updatedItem = await connection.query(queryStatement)
             res.status(200).json(updatedItem[0])

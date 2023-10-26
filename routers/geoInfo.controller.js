@@ -11,44 +11,66 @@ const connection = mysql.createPool({
     password: process.env.REMOTE_PASSWORD
 }).promise();
 
-router.get("/:racename", async (req, res) => {
+
+//GET - Get the table format -- PROTECTED
+router.get('/tableInfo', authenticateUser, async (req, res) => {
     try {
-        const queryStatement = `select * from map_info where lower(replace(raceName, " ", "")) = "${req.params.racename}"`;
+        const queryStatement = `describe map_info`
+        const tableStructure = await connection.query(queryStatement)
+        res.status(200).json(tableStructure[0])
+    } catch (error) {
+        console.error(`There was an error fetching the table structure`);
+        res.status(500).json({ "message": `There was an error fetching the schedule data ${error}` })
+    }
+})
+
+//GET - Get map options settings based on the racename -- UNPROTECTED
+router.get("/mapOptions/:raceName", async (req, res) => {
+    try {
+        const queryStatement = `select * from map_options where lower(replace(raceName, " ", "")) = "${req.params.raceName}"`;
         const mapData = await connection.query(queryStatement)
         res.status(200).json(mapData)
     } catch (error) {
-        console.error(`There was an error fetching racer data - provided params racename: ${req.params.racename}.  Error: ${error}`);
+        console.error(`There was an error fetching racer data - provided params racename: ${req.params.raceName}.  Error: ${error}`);
         res.status(500).json({ "message": `There was an error fetching the data ${error}` })
     }
 })
 
-router.post("/:racename", authenticateUser, async (req, res) => {
+//GET - Get locations based on the racename -- UNPROTECTED
+router.get("/:raceName", async (req, res) => {
     try {
-        let columnNames = [];
-        let columnValues = [];
-        for (let propertyName in req.body) {
-            columnNames.push(propertyName)
-            columnValues.push(req.body[propertyName])
+        const queryStatement = `select * from map_info where lower(replace(raceName, " ", "")) = "${req.params.raceName}"`;
+        const returnedMapData = await connection.query(queryStatement)
+        res.status(200).json(returnedMapData[0])
+    } catch (error) {
+        console.error(`There was an error fetching racer data - provided params racename: ${req.params.raceName}.  Error: ${error}`);
+        res.status(500).json({ "message": `There was an error fetching the data ${error}` })
+    }
+})
+
+//POST - Add a location item to a race - based on the race name -- PROTECTED
+router.post("/:raceName", authenticateUser, async (req, res) => {
+    try {
+        let modifiedRaces = req.races.map(race => race.split(' ').join('').toLowerCase())
+        if (!modifiedRaces.includes(req.params.raceName)) res.status(403).json({ "message": "Permission to modify selected race denied" })
+        else {
+            let columnNames = [];
+            let columnValues = [];
+            for (let propertyName in req.body) {
+                columnNames.push(propertyName)
+                columnValues.push(req.body[propertyName])
+            }
+            const queryStatement = `insert into map_info (${columnNames.join(', ')}) values(${columnNames.map(columnName => '?').join(', ')})`;
+            const addedMapData = await connection.query(queryStatement, columnValues)
+            res.status(200).json(addedMapData[0])
         }
-        const queryStatement = `insert into map_info (${columnNames.join(', ')}) values(${columnNames.map(columnName => '?').join(', ')})`;
-        const addedMapData = await connection.query(queryStatement, columnValues)
-        res.status(200).json(addedMapData)
     } catch (error) {
-        console.error(`There was an error fetching racer data - provided params racename: ${req.params.racename}.  Error: ${error}`);
+        console.error(`There was an error fetching racer data - provided params racename: ${req.params.raceName}.  Error: ${error}`);
         res.status(500).json({ "message": `There was an error fetching the data ${error}` })
     }
 })
 
-router.get("/mapOptions/:racename", async (req, res) => {
-    try {
-        const queryStatement = `select * from map_options where lower(replace(raceName, " ", "")) = "${req.params.racename}"`;
-        const mapData = await connection.query(queryStatement)
-        res.status(200).json(mapData)
-    } catch (error) {
-        console.error(`There was an error fetching racer data - provided params racename: ${req.params.racename}.  Error: ${error}`);
-        res.status(500).json({ "message": `There was an error fetching the data ${error}` })
-    }
-})
+
 
 router.delete("/:raceName/:locationId", authenticateUser, async (req, res) => {
     try {
@@ -67,7 +89,8 @@ router.delete("/:raceName/:locationId", authenticateUser, async (req, res) => {
     }
 })
 
-//need to deal with null values
+//! NEED TO DEAL WITH NULL VALUES? & WITH UNESCAPED CHARACTERS
+//PATCH - Update a location item based on the race name and location item id -- PROTECTED
 router.patch('/:raceName/:locationId', authenticateUser, async (req, res) => {
     try {
         let modifiedRaces = req.races.map(race => race.split(' ').join('').toLowerCase())
@@ -78,10 +101,11 @@ router.patch('/:raceName/:locationId', authenticateUser, async (req, res) => {
             let updateInfoArray = []
             for (let propertyName in req.body) {
                 console.log(`type: ${typeof req.body[propertyName]}: ${propertyName}`)
-                updateInfoArray.push(`${propertyName} = '${req.body[propertyName]}'`)
+                updateInfoArray.push(`${propertyName} = "${req.body[propertyName]}"`)
             }
             console.log(updateInfoArray.join(', '))
             const queryStatement = `update map_info set ${updateInfoArray.join(', ')} where id = ${req.params.locationId}`
+            console.log(queryStatement)
             const updatedLocation = await connection.query(queryStatement)
             res.status(200).json(updatedLocation[0])
         }
