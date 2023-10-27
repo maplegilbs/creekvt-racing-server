@@ -20,6 +20,18 @@ router.get('/', async (req, res) => {
     }
 })
 
+//GET -- Get the categories by raceName -- UNPROTECTED
+router.get('/categories/:raceName', async(req, res)=>{
+    try {
+        const queryStatement = `SELECT raceName, GROUP_CONCAT(category SEPARATOR ", ") as categoryOpts FROM race_categories where lower(replace(raceName, " ", "")) = "${req.params.raceName}";`
+        const categories = await connection.query(queryStatement)
+        res.status(200).json(categories[0])
+    } catch (error) {
+        console.error(`There was an error fetching the categories for the selected race ${req.params.raceName}, ${error}`);
+        res.status(500).json({ "message": `There was an error fetching the categories data ${error}` })
+    }
+})
+
 
 router.get('/:raceName', async (req, res) => {
     const queryStatement = `select * from race_details where lower(replace(name, " ", "")) = "${req.params.raceName}"`;

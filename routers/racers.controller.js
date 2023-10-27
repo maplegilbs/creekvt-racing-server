@@ -11,7 +11,7 @@ const connection = mysql.createPool({
 }).promise();
 
 
-//GET - Get the table format -- PROTECTED
+//GET -- Get the table format -- PROTECTED
 router.get('/tableInfo', authenticateUser, async (req, res) => {
     try {
         const queryStatement = `describe registered_racers`
@@ -19,12 +19,12 @@ router.get('/tableInfo', authenticateUser, async (req, res) => {
         res.status(200).json(tableStructure[0])
     } catch (error) {
         console.error(`There was an error fetching the table structure`);
-        res.status(500).json({ "message": `There was an error fetching the schedule data ${error}` })
+        res.status(500).json({ "message": `There was an error fetching the table info data ${error}` })
     }
 })
 
 
-//! ADD SEARCH CRITEREA CURRENT RACE YEAR
+//! ADD SEARCH CRITEREA CURRENT RACE YEAR AND RETURN ONLY RACERS NAME PARTNERS AND CATEGORY
 //GET -- front end route for pages - be sure to only return racer's name, partners and category -- UNPROTECTED
 router.get('/:raceName', async (req, res) => {
     try {
@@ -38,9 +38,8 @@ router.get('/:raceName', async (req, res) => {
     }
 })
 
-//! ADD SEARCH CRITEREA CURRENT RACE YEAR
 //GET -- Get racers based on race name -- PROTECTED
-router.get('/admin/:raceName', authenticateUser, async (req, res) => {
+router.get('/admin/:raceName/:year', authenticateUser, async (req, res) => {
     try {
         const queryStatement =
             `select registered_racers.*, categoryOpts 
@@ -50,8 +49,9 @@ router.get('/admin/:raceName', authenticateUser, async (req, res) => {
                 from race_categories where lower(replace(raceName, " ", "")) = "${req.params.raceName}"
             ) as groupedCategories 
             ON 
-            registered_racers.raceName = groupedCategories.raceName;`
-        // const queryStatement = `select * from registered_racers where lower(replace(raceName," ", "")) = "${req.params.raceName}"`
+            registered_racers.raceName = groupedCategories.raceName
+            WHERE
+            year = ${Number(req.params.year)};`
         let returnedRacers = await connection.query(queryStatement)
         res.status(200).json(returnedRacers[0])
     } catch (error) {
