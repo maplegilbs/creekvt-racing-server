@@ -24,19 +24,19 @@ router.get('/tableInfo', authenticateUser, async (req, res) => {
     }
 })
 
-//GET - Get map options settings based on the racename -- UNPROTECTED
+//GET -- Get map options settings based on the racename -- UNPROTECTED
 router.get("/mapOptions/:raceName", async (req, res) => {
     try {
         const queryStatement = `select * from map_options where lower(replace(raceName, " ", "")) = "${req.params.raceName}"`;
-        const mapData = await connection.query(queryStatement)
-        res.status(200).json(mapData)
+        const returnedMapOptions = await connection.query(queryStatement)
+        res.status(200).json(returnedMapOptions[0])
     } catch (error) {
         console.error(`There was an error fetching racer data - provided params racename: ${req.params.raceName}.  Error: ${error}`);
         res.status(500).json({ "message": `There was an error fetching the data ${error}` })
     }
 })
 
-//GET - Get locations based on the racename -- UNPROTECTED
+//GET -- Get locations based on the racename -- UNPROTECTED
 router.get("/:raceName", async (req, res) => {
     try {
         const queryStatement = `select * from map_info where lower(replace(raceName, " ", "")) = "${req.params.raceName}"`;
