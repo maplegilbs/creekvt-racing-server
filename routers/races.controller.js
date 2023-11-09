@@ -30,30 +30,24 @@ router.get('/:raceName', async (req, res) => {
     }
 })
 
-//needs to account for all different input data - checking typeof for objects
+//Using prepared statements
 router.patch('/:raceName', authenticateUser, async (req, res) => {
-    console.log('patch', req.body)
+    console.log(req.body)
     try {
         let modifiedRaces = req.races.map(race => race.split(' ').join('').toLowerCase())
         if (!modifiedRaces.includes(req.params.raceName)) {
             res.status(403).json({ "message": "Permission to modify selected race denied" })
         }
         else {
-            let fieldUpdateStrings = [];
+            let fieldUpdatePreparedStatement = [];
+            let fieldUpdateValues = [];
             for (let propertyName in req.body) {
-                console.log(typeof req.body[propertyName])
-                if (propertyName !== "name") {
-                    if (propertyName === "schedule") {
-                        fieldUpdateStrings.push(`${propertyName} = '${JSON.stringify(req.body[propertyName])}'`)
-                    }
-                    else {
-                        fieldUpdateStrings.push(`${propertyName} = "${req.body[propertyName]}"`)
-                    }
-                }
+                fieldUpdatePreparedStatement.push(`${propertyName} = ? `)
+                fieldUpdateValues.push(req.body[propertyName])
             }
-            const fieldUpdateString = fieldUpdateStrings.join(', ');
-            const queryStatement = `update race_details set ${fieldUpdateString} where name = "${req.body.name}" `
-            const updatedRace = await connection.query(queryStatement)
+            const queryStatement = `update race_details set ${fieldUpdatePreparedStatement} where name = "${req.body.name}" `
+            console.log(queryStatement, fieldUpdateValues)
+            const updatedRace = await connection.query(queryStatement, fieldUpdateValues)
             res.status(200).json(updatedRace)
         }
     } catch (error) {
