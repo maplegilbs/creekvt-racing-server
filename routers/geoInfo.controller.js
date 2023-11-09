@@ -24,6 +24,20 @@ router.get('/tableInfo', authenticateUser, async (req, res) => {
     }
 })
 
+
+//GET -- Get distinct location names based on the racename -- UNPROTECTED
+
+router.get("/locationNames/:raceName", async(req, res)=>{
+    try {
+        const queryStatement = `select distinct name from map_info where lower(replace(raceName, " ", "")) = "${req.params.raceName}"`
+        const returnedLocaitonNames = await connection.query(queryStatement)
+        res.status(200).json(returnedLocaitonNames[0])
+    } catch (error) {
+        console.error(`There was an error fetching racer data - provided params racename: ${req.params.raceName}.  Error: ${error}`);
+        res.status(500).json({ "message": `There was an error fetching the location names for the race: ${req.params.raceName}` })
+
+    }
+})
 //GET -- Get map options settings based on the racename -- UNPROTECTED
 router.get("/mapOptions/:raceName", async (req, res) => {
     try {

@@ -19,20 +19,20 @@ router.get('/admin/:raceName/:raceYear', authenticateUser, async (req, res) => {
         if (!modifiedRaces.includes(req.params.raceName)) res.status(403).json({ "message": "Permission to modify selected race denied" })
         else {
             const queryStatement = `
-            SELECT racers.*, racer_entities.year, racer_entities.category, racer_entities.raceName, categoryOpts
-            FROM racers 
-            JOIN racer_entities
-            ON racers.racerEntityID = racer_entities.id
-            JOIN ( 
-                SELECT raceName, GROUP_CONCAT(category SEPARATOR ', ') as categoryOpts 
-                from race_categories where lower(replace(raceName, " ", "")) = "${req.params.raceName}"
-            ) as groupedCategories 
-            ON 
-            racer_entities.raceName = groupedCategories.raceName
-            WHERE
-            racer_entities.year = ${Number(req.params.raceYear)} 
-            AND
-            lower(replace(racer_entities.raceName, " ", "")) = "${req.params.raceName}";`
+                SELECT racers.*, racer_entities_details.* 
+                FROM racers 
+                JOIN (
+                    SELECT racer_entities.*, race_details.categoryOptions 
+                    FROM racer_entities 
+                    JOIN race_details 
+                    on racer_entities.raceName = race_details.name
+                    ) as racer_entities_details
+                ON racer_entities_details.id = racers.racerEntityID 
+                WHERE 
+                racer_entities_details.year = ${Number(req.params.raceYear)}
+                AND
+                lower(replace(racer_entities_details.raceName, " ", "")) = "${req.params.raceName}"`
+
             const returnedRacers = await connection.query(queryStatement)
             console.log(returnedRacers)
             res.status(200).json(returnedRacers[0])
