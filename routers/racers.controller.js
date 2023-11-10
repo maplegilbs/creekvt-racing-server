@@ -43,6 +43,33 @@ router.get('/admin/:raceName/:raceYear', authenticateUser, async (req, res) => {
     }
 })
 
+//GET -- Get racers based on race name and year.  Joined with racer entity data. Returning only firstname, lastname, id and category.  For front end usage.  -- UNPROTECTED
+router.get('/:raceName/:raceYear', async (req, res) => {
+    try {
+        const queryStatement = `
+                SELECT racers.firstName, racers.lastName, racer_entities_details.id as entityID, racer_entities_details.category
+                FROM racers 
+                JOIN (
+                    SELECT racer_entities.*, race_details.categoryOptions 
+                    FROM racer_entities 
+                    JOIN race_details 
+                    on racer_entities.raceName = race_details.name
+                    ) as racer_entities_details
+                ON racer_entities_details.id = racers.racerEntityID 
+                WHERE 
+                racer_entities_details.year = ${Number(req.params.raceYear)}
+                AND
+                lower(replace(racer_entities_details.raceName, " ", "")) = "${req.params.raceName}"`
+
+        const returnedRacers = await connection.query(queryStatement)
+        console.log(returnedRacers)
+        res.status(200).json(returnedRacers[0])
+    } catch (error) {
+        console.error(`There was an error fetching racers based on the passed in year: ${req.params.raceYear} and race: ${req.params.raceName}.  Error: ${error}`);
+        res.status(500).json({ "message": `There was an error fetching the data based on the passed in year: ${req.params.raceYear} and race: ${req.params.raceName}.` })
+    }
+})
+
 //POST -- Add a new racer entity -- PROTECTED
 router.post('/admin/addRaceEntity/:raceName', authenticateUser, async (req, res) => {
     try {
