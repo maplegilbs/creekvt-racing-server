@@ -34,7 +34,6 @@ router.get('/admin/:raceName/:raceYear', authenticateUser, async (req, res) => {
                 lower(replace(racer_entities_details.raceName, " ", "")) = "${req.params.raceName}"`
 
             const returnedRacers = await connection.query(queryStatement)
-            console.log(returnedRacers)
             res.status(200).json(returnedRacers[0])
         }
     } catch (error) {
@@ -62,7 +61,6 @@ router.get('/:raceName/:raceYear', async (req, res) => {
                 lower(replace(racer_entities_details.raceName, " ", "")) = "${req.params.raceName}"`
 
         const returnedRacers = await connection.query(queryStatement)
-        console.log(returnedRacers)
         res.status(200).json(returnedRacers[0])
     } catch (error) {
         console.error(`There was an error fetching racers based on the passed in year: ${req.params.raceYear} and race: ${req.params.raceName}.  Error: ${error}`);
@@ -94,7 +92,6 @@ router.post('/admin/addRaceEntity/:raceName', authenticateUser, async (req, res)
 
 //PATCH - Update a racer entity based on the race name and racer entity id -- PROTECTED
 router.patch('/admin/editRacerEntity/:raceName/:racerEntityId', authenticateUser, async (req, res) => {
-    console.log(req.body)
     try {
         let modifiedRaces = req.races.map(race => race.split(' ').join('').toLowerCase())
         if (!modifiedRaces.includes(req.params.raceName)) {
@@ -175,7 +172,6 @@ router.post('/admin/addRacer/:raceName', authenticateUser, async (req, res) => {
 
 //PATCH - Update a racer based on the race name and racer id -- PROTECTED
 router.patch('/admin/editRacer/:raceName/:racerId', authenticateUser, async (req, res) => {
-    console.log(req.body)
     try {
         let modifiedRaces = req.races.map(race => race.split(' ').join('').toLowerCase())
         if (!modifiedRaces.includes(req.params.raceName)) {
