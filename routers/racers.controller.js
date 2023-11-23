@@ -11,7 +11,21 @@ const connection = mysql.createPool({
 }).promise();
 
 
-//!Admin route, returns all info -  need front end route that does not return email/birthdate etc
+
+//GET -- Get the table format for a racer -- PROTECTED
+router.get('/admin/tableInfo/:tableName', authenticateUser, async (req, res) => {
+    const tableName = req.params.tableName === 'racers' ? 'racers' : 'racer_entities';
+    try {
+        const queryStatement = `describe ${tableName}`
+        const tableStructure = await connection.query(queryStatement)
+        res.status(200).json(tableStructure[0])
+    } catch (error) {
+        console.error(`There was an error fetching the table structure.  ${error}`);
+        res.status(500).json({ "message": `There was an error fetching the table info data` })
+    }
+})
+
+
 //GET -- Get racers based on race name and year.  Joined with racer entity data. -- PROTECTED
 router.get('/admin/:raceName/:raceYear', authenticateUser, async (req, res) => {
     try {
@@ -22,18 +36,19 @@ router.get('/admin/:raceName/:raceYear', authenticateUser, async (req, res) => {
                 SELECT racers.*, racer_entities_details.* 
                 FROM racers 
                 JOIN (
-                    SELECT racer_entities.*, race_details.categoryOptions 
+                    SELECT racer_entities.id as racerEntityID, racer_entities.category, racer_entities.raceName, racer_entities.year, race_details.categoryOptions  
                     FROM racer_entities 
                     JOIN race_details 
                     on racer_entities.raceName = race_details.name
                     ) as racer_entities_details
-                ON racer_entities_details.id = racers.racerEntityID 
+                ON racer_entities_details.racerEntityID = racers.racerEntityID 
                 WHERE 
                 racer_entities_details.year = ${Number(req.params.raceYear)}
                 AND
                 lower(replace(racer_entities_details.raceName, " ", "")) = "${req.params.raceName}"`
 
             const returnedRacers = await connection.query(queryStatement)
+            console.log(returnedRacers[0])
             res.status(200).json(returnedRacers[0])
         }
     } catch (error) {
@@ -132,21 +147,6 @@ router.delete('/admin/deleteRacerEntity/:raceName/:racerEntityId', authenticateU
     }
 })
 
-
-/*----------RACERS----------*/
-
-//GET -- Get the table format for a racer -- PROTECTED
-router.get('/tableInfo/:tableName', authenticateUser, async (req, res) => {
-    const tableName = req.params.tableName === 'racers' ? 'racers' : 'racer_entities';
-    try {
-        const queryStatement = `describe ${tableName}`
-        const tableStructure = await connection.query(queryStatement)
-        res.status(200).json(tableStructure[0])
-    } catch (error) {
-        console.error(`There was an error fetching the table structure.  ${error}`);
-        res.status(500).json({ "message": `There was an error fetching the table info data` })
-    }
-})
 
 //POST -- Add a new racer - based on the race name -- PROTECTED
 router.post('/admin/addRacer/:raceName', authenticateUser, async (req, res) => {
