@@ -90,7 +90,7 @@ async function createOrder(orderData) {
             // https://developer.paypal.com/tools/sandbox/negative-testing/request-headers/
             // "PayPal-Mock-Response": '{"mock_application_codes": "MISSING_REQUIRED_PARAMETER"}'
             // "PayPal-Mock-Response": '{"mock_application_codes": "PERMISSION_DENIED"}'
-            "PayPal-Mock-Response": '{"mock_application_codes": "INTERNAL_SERVER_ERROR"}'
+            // "PayPal-Mock-Response": '{"mock_application_codes": "INTERNAL_SERVER_ERROR"}'
         },
         body: JSON.stringify(payload)
     })
@@ -100,7 +100,7 @@ async function createOrder(orderData) {
 
 async function captureOrder(orderID) {
     const token = await generateAccessToken();
-    const url = `${base}/v2/checkout/orders/${orderID}/capture`
+    const url = `${PAYPAL_BASE_URL}/v2/checkout/orders/${orderID}/capture`
     const response = await fetch(url, {
         method: "POST",
         headers: {
