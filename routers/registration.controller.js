@@ -1,19 +1,21 @@
 //Libraries
 const router = require('express').Router()
+//DB Connections
 const mysql = require('mysql2')
-//Middleware
-const { authenticateUser } = require("../middleware/authenticate.js")
 const connection = mysql.createPool({
     host: process.env.REMOTE_HOST,
     user: process.env.REMOTE_USER,
     database: process.env.REMOTE_DATABASE,
     password: process.env.REMOTE_PASSWORD
 }).promise();
+//PAYPAL Variables
+const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_BASE_URL } = process.env;
+const payeeLookup = {
+    testrace: process.env.PAYPAL_TESTRACE_PAYEE,
+    newhavenrace: process.env.PAYPAL_NEWHAVENRACE_PAYEE
+}
 
-
-const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET } = process.env;
-const base = "https://api-m.sandbox.paypal.com"
-
+//Get access token for paypal api requests
 async function generateAccessToken() {
     try {
         if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
@@ -22,7 +24,7 @@ async function generateAccessToken() {
         const auth = Buffer.from(
             PAYPAL_CLIENT_ID + ":" + PAYPAL_CLIENT_SECRET,
         ).toString("base64")
-        const response = await fetch(`${base}/v1/oauth2/token`, {
+        const response = await fetch(`${PAYPAL_BASE_URL}/v1/oauth2/token`, {
             method: 'POST',
             body: "grant_type=client_credentials",
             headers: {
@@ -37,6 +39,7 @@ async function generateAccessToken() {
     }
 }
 
+//Calculate the total charge for paypal checkout
 async function calcTotal(orderData) {
     //Get fees and ACA discounts then calculates the total based on the racers and whether or not they have an ACA number
     try {
@@ -58,11 +61,12 @@ async function calcTotal(orderData) {
     }
 }
 
-
+//Create paypal order - get an auth token, calculate the total and generate the payload with desired payment account (based on race name), then create the order via paypal api call
 async function createOrder(orderData) {
     const token = await generateAccessToken()
-    const url = `${base}/v2/checkout/orders`
+    const url = `${PAYPAL_BASE_URL}/v2/checkout/orders`
     const orderValue = await calcTotal(orderData);
+    const payeeEmail = payeeLookup[orderData.raceName.split(" ").join("").toLowerCase()]
     const payload = {
         intent: 'CAPTURE',
         purchase_units: [
@@ -71,20 +75,22 @@ async function createOrder(orderData) {
                     currency_code: "USD",
                     value: orderValue.toString()
                 },
+                payee: {
+                    email_address: payeeEmail
+                }
             },
         ],
     };
-
     const createOrderResponse = await fetch(url, {
         method: 'POST',
         headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
+            Authorization: `Bearer ${token}`,
             // Uncomment one of these to force an error for negative testing (in sandbox mode only). Documentation:
             // https://developer.paypal.com/tools/sandbox/negative-testing/request-headers/
             // "PayPal-Mock-Response": '{"mock_application_codes": "MISSING_REQUIRED_PARAMETER"}'
             // "PayPal-Mock-Response": '{"mock_application_codes": "PERMISSION_DENIED"}'
-            // "PayPal-Mock-Response": '{"mock_application_codes": "INTERNAL_SERVER_ERROR"}'
+            "PayPal-Mock-Response": '{"mock_application_codes": "INTERNAL_SERVER_ERROR"}'
         },
         body: JSON.stringify(payload)
     })
@@ -126,10 +132,9 @@ async function handleResponse(response) {
 
 async function addRacerEntity(registrationData, transactionID) {
     try {
-        const values = [registrationData.year, registrationData.raceName, registrationData.category, transactionID] //year, raceName, category, transactionID
+        const values = [registrationData.year, registrationData.raceName, registrationData.category, transactionID];
         let queryStatement = `INSERT INTO racer_entities(year, raceName, category, transactionID) VALUES (?, ?, ?, ?)`
         const addedRacerEntity = await connection.query(queryStatement, values)
-        console.log(addedRacerEntity[0].insertId)
         return addedRacerEntity[0].insertId
     } catch (error) {
         console.error(`There was an error adding the racer entity: ${error}`)
@@ -144,7 +149,6 @@ async function addRacers(registrationData, racerEntityID) {
         let addedRacers = []
         values.forEach(async row => {
             try {
-                console.log("147", row)
                 let addedRacer = await connection.query(queryStatement, row)
                 addedRacers.push(addedRacer[0])
             } catch (error) {
@@ -156,7 +160,7 @@ async function addRacers(registrationData, racerEntityID) {
     }
 }
 
-
+//Create order via paypal API - no info added to DB
 router.post("/orders/create", async (req, res) => {
     try {
         const orderData = req.body;
@@ -168,19 +172,19 @@ router.post("/orders/create", async (req, res) => {
     }
 })
 
+
+//Capture order via paypal API (successful payment) and add racer entity and associated racers to DB
 router.post("/orders/capture/:orderID", async (req, res) => {
     try {
         const { orderID } = req.params;
         const { registrationData } = req.body;
         const { jsonResponse, httpStatusCode } = await captureOrder(orderID);
-        console.log(jsonResponse, httpStatusCode)
-        if (httpStatusCode === 201) {
+        if (httpStatusCode >= 200 && httpStatusCode < 300) {
             let addedEntityID = await addRacerEntity(registrationData, orderID)
-            console.log(addedEntityID)
             let addedRacers = await addRacers(registrationData, addedEntityID)
-            console.log(addedRacers)
         }
-        res.status(httpStatusCode).json(jsonResponse)
+        let timeStamp = new Date();
+        res.status(httpStatusCode).json({ orderData: jsonResponse, timeStamp: timeStamp })
     } catch (error) {
         console.error(`Failed to capture order: ${error}`)
         res.status(500).json({ error: "Failed to capture order" })
