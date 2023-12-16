@@ -47,15 +47,24 @@ async function sendEmail(sender, recipient, subject, messageContent) {
         html: messageContent
     })
     return info
+
+    //Use to test front end form submission
+    // let response = new Promise(resolve => setTimeout(
+    //    () => resolve({messageId: 'test'})
+    // , 3000))
+    // await response
+    // return response
+    
 }
 
 //General Contact Message
 router.post('/', async (req, res) => {
     try {
         const {email, raceName, message, name} = req.body
+        console.log(email, raceName, message, name)
         const subject = `Contact from ${name}`;
         const messageContent = `<p>From ${email}  ${raceName? '-- Regarding the ' + raceName: ""}</p><br/><p>${message}</p>`
-        const recipient = raceName ? emailLookup.user[raceName] : 'gopaddling@creekvt.com';
+        const recipient = raceName ? emailLookup.user[raceName.split(" ").join("").toLowerCase()] : 'gopaddling@creekvt.com';
         const info = await sendEmail("general", recipient, subject, messageContent)
         console.log(`Message sent id: ${info.messageId}`)
         res.status(200).json(info)
