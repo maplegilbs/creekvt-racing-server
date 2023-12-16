@@ -144,7 +144,6 @@ async function addRacerEntity(registrationData, transactionID) {
 async function addRacers(registrationData, racerEntityID) {
     try {
         const values = registrationData.racers.map(racer => [racerEntityID, racer.firstName, racer.lastName, racer.birthdate, racer.email, racer.gender, racer.acaNumber, 1])
-        console.log("142", values)
         const queryStatement = `INSERT INTO racers (racerEntityID, firstName, lastName, birthdate, email, gender, acaNumber, isPaid) VALUES(?, ?, ?, ?, ?, ?, ?, ?)`
         let addedRacers = []
         values.forEach(async row => {
