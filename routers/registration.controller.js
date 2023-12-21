@@ -1,5 +1,7 @@
 //Libraries
 const router = require('express').Router()
+//Middleware
+const {checkRegStatus} = require('../middleware/registrationCheck.js') 
 //DB Connections
 const mysql = require('mysql2')
 const connection = mysql.createPool({
@@ -160,7 +162,7 @@ async function addRacers(registrationData, racerEntityID) {
 }
 
 //Create order via paypal API - no info added to DB
-router.post("/orders/create", async (req, res) => {
+router.post("/orders/create", checkRegStatus, async (req, res) => {
     try {
         const orderData = req.body;
         const { jsonResponse, httpStatusCode } = await createOrder(orderData)
