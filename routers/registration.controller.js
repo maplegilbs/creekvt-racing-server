@@ -1,5 +1,7 @@
 //Libraries
 const router = require('express').Router()
+//Middleware
+const {checkRegStatus} = require('../middleware/registrationCheck.js') 
 //DB Connections
 const mysql = require('mysql2')
 const connection = mysql.createPool({
@@ -109,7 +111,7 @@ async function captureOrder(orderID) {
             // Uncomment one of these to force an error for negative testing (in sandbox mode only). Documentation:
             // https://developer.paypal.com/tools/sandbox/negative-testing/request-headers/
             // "PayPal-Mock-Response": '{"mock_application_codes": "INSTRUMENT_DECLINED"}'
-            // "PayPal-Mock-Response": '{"mock_application_codes": "TRANSACTION_REFUSED"}'
+            "PayPal-Mock-Response": '{"mock_application_codes": "TRANSACTION_REFUSED"}'
             // "PayPal-Mock-Response": '{"mock_application_codes": "INTERNAL_SERVER_ERROR"}'
         }
     })
@@ -144,7 +146,6 @@ async function addRacerEntity(registrationData, transactionID) {
 async function addRacers(registrationData, racerEntityID) {
     try {
         const values = registrationData.racers.map(racer => [racerEntityID, racer.firstName, racer.lastName, racer.birthdate, racer.email, racer.gender, racer.acaNumber, 1])
-        console.log("142", values)
         const queryStatement = `INSERT INTO racers (racerEntityID, firstName, lastName, birthdate, email, gender, acaNumber, isPaid) VALUES(?, ?, ?, ?, ?, ?, ?, ?)`
         let addedRacers = []
         values.forEach(async row => {
@@ -161,7 +162,7 @@ async function addRacers(registrationData, racerEntityID) {
 }
 
 //Create order via paypal API - no info added to DB
-router.post("/orders/create", async (req, res) => {
+router.post("/orders/create", checkRegStatus, async (req, res) => {
     try {
         const orderData = req.body;
         const { jsonResponse, httpStatusCode } = await createOrder(orderData)
