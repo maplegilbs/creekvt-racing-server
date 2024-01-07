@@ -2,7 +2,10 @@
 const express = require('express')
 const app = express();
 const cors = require('cors')
-require('dotenv').config();
+
+//DEV ONLY
+// require('dotenv').config();
+
 //Routers
 const racesRouter = require('./routers/races.controller.js')
 const usersRouter = require('./routers/users.controller.js')
