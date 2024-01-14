@@ -73,7 +73,8 @@ router.get('/:raceName/:raceYear', async (req, res) => {
                 WHERE 
                 racer_entities_details.year = ${Number(req.params.raceYear)}
                 AND
-                lower(replace(racer_entities_details.raceName, " ", "")) = "${req.params.raceName}"`
+                lower(replace(racer_entities_details.raceName, " ", "")) = "${req.params.raceName}"
+                ORDER BY entityID`
 
         const returnedRacers = await connection.query(queryStatement)
         res.status(200).json(returnedRacers[0])
