@@ -4,7 +4,7 @@ const app = express();
 const cors = require('cors')
 
 //DEV ONLY
-// require('dotenv').config();
+require('dotenv').config();
 
 //Routers
 const racesRouter = require('./routers/races.controller.js')
@@ -16,6 +16,7 @@ const resultsRouter = require('./routers/results.controller.js')
 const faqRouter = require('./routers/faq.controller.js')
 const registrationRouter = require('./routers/registration.controller.js')
 const contactRouter = require('./routers/contact.controller.js')
+const sponsorRouter = require('./routers/sponsors.controller.js')
 const PORT = process.env.PORT;
 
 app.use(express.json())
@@ -29,6 +30,7 @@ app.use('/results', resultsRouter)
 app.use('/faq', faqRouter)
 app.use('/register', registrationRouter)
 app.use('/contact', contactRouter)
+app.use('/sponsors', sponsorRouter)
 
 
 
