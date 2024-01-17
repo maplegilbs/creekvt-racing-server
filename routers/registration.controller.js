@@ -1,5 +1,6 @@
 //Libraries
-const router = require('express').Router()
+const router = require('express').Router();
+const {sendEmail, createReceiptMessage} = require('../utils/emails.js')
 //Middleware
 const {checkRegStatus} = require('../middleware/registrationCheck.js') 
 //DB Connections
@@ -178,13 +179,17 @@ router.post("/orders/create", checkRegStatus, async (req, res) => {
 router.post("/orders/capture/:orderID", async (req, res) => {
     try {
         const { orderID } = req.params;
-        const { registrationData } = req.body;
+        const { registrationData, date } = req.body;
         const { jsonResponse, httpStatusCode } = await captureOrder(orderID);
         if (httpStatusCode >= 200 && httpStatusCode < 300) {
             let addedEntityID = await addRacerEntity(registrationData, orderID)
             let addedRacers = await addRacers(registrationData, addedEntityID)
         }
         let timeStamp = new Date();
+        const raceName = registrationData.raceName.split(" ").join("").toLowerCase();
+        const recipient = registrationData.racers[0].email;
+        const messageContent = createReceiptMessage(registrationData.raceName, date, jsonResponse.id, registrationData.racers, jsonResponse.purchase_units[0].payments.captures[0].amount.value)
+        await sendEmail(raceName, recipient, "Your race registration receipt", messageContent)
         res.status(httpStatusCode).json({ orderData: jsonResponse, timeStamp: timeStamp })
     } catch (error) {
         console.error(`Failed to capture order: ${error}`)

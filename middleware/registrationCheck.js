@@ -8,7 +8,7 @@ const connection = mysql.createPool({
     password: process.env.REMOTE_PASSWORD
 }).promise();
 
-//Determines if 
+//Determines if registration is currently open and if not rejects the with status 500 and error message
 async function checkRegStatus (req, res, next) {
     try {
         let curRace = req.body.raceName.split(" ").join("").toLowerCase();
