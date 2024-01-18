@@ -135,8 +135,9 @@ async function handleResponse(response) {
 
 async function addRacerEntity(registrationData, transactionID) {
     try {
-        const values = [registrationData.year, registrationData.raceName, registrationData.category, transactionID];
-        let queryStatement = `INSERT INTO racer_entities(year, raceName, category, transactionID) VALUES (?, ?, ?, ?)`
+        const addedDate = new Date();
+        const values = [registrationData.year, registrationData.raceName, registrationData.category, transactionID, addedDate];
+        let queryStatement = `INSERT INTO racer_entities(year, raceName, category, transactionID, transactionDate) VALUES (?, ?, ?, ?, ?)`
         const addedRacerEntity = await connection.query(queryStatement, values)
         return addedRacerEntity[0].insertId
     } catch (error) {

@@ -48,7 +48,6 @@ router.get('/admin/:raceName/:raceYear', authenticateUser, async (req, res) => {
                 lower(replace(racer_entities_details.raceName, " ", "")) = "${req.params.raceName}"`
 
             const returnedRacers = await connection.query(queryStatement)
-            console.log(returnedRacers[0])
             res.status(200).json(returnedRacers[0])
         }
     } catch (error) {
@@ -90,8 +89,9 @@ router.post('/admin/addRaceEntity/:raceName', authenticateUser, async (req, res)
         let modifiedRaces = req.races.map(race => race.split(' ').join('').toLowerCase())
         if (!modifiedRaces.includes(req.params.raceName)) res.status(403).json({ "message": "Permission to modify selected race denied" })
         else {
-            let columnNames = [];
-            let columnValues = [];
+            let addedDate = new Date();
+            let columnNames = ['transactionDate'];
+            let columnValues = [addedDate];
             for (let propertyName in req.body) {
                 columnNames.push(propertyName)
                 columnValues.push(req.body[propertyName])
