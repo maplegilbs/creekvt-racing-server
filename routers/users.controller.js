@@ -29,7 +29,7 @@ router.post('/adduser', authenticateUser, async (req, res) => {
         res.status(200).json(insertedUser)
     } catch (error) {
         console.error(error);
-        res.status(500).json({ "message": `There was an error fetching the data ${error}` })
+        res.status(500).json({ "message": `There was an error adding the user.  Contact the site admin for more information.` })
     }
 })
 
@@ -50,7 +50,7 @@ router.post('/login', async (req, res) => {
         }
     } catch (error) {
         console.log(error)
-        res.status(500).json({ "message": `There was an error fetching the data ${error}` })
+        res.status(500).json({ "message": `There was an error logging in.  Contact the site admin for more information.` })
     }
 })
 
@@ -58,6 +58,27 @@ router.get('/userInfo', authenticateUser, async (req, res) => {
     let name = req.name;
     let races = req.races;
     res.status(200).json({name, races})
+})
+
+router.patch('/updatePassword', authenticateUser, async(req, res) => {
+    try {
+        const{userName} = req;
+        const{password, newPassword} = req.body;
+        const queryStatement = ` select * from users where userName = "${userName}"`;
+        const returnedUser = await connection.query(queryStatement);
+        if (returnedUser[0].length === 0) {res.status(401).json({ "message": `Username / password incorrect` })}
+        else if (!bcrypt.compareSync(password, returnedUser[0][0].password)){res.status(401).json({ "message": `Username / password incorrect` })}
+        else {
+             const updateStatement = `update users set password = ? where userName = ?`
+             const updateValues = [bcrypt.hashSync(newPassword, saltRounds), userName]
+             let updatedUser = await connection.query(updateStatement, updateValues)
+             res.status(200).json({message: `Updated password for ${userName} successfully.`})
+        }
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ "message": `There was an error updating the password.  Contact the site admin for more information.` })
+    }
+
 })
 
 
