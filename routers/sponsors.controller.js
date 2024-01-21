@@ -11,6 +11,22 @@ const connection = mysql.createPool({
     password: process.env.REMOTE_PASSWORD
 }).promise()
 
+
+//GET - Get sponsor images based on racename -- UNPROTECTED
+
+
+//GET -- Get the table format -- PROTECTED
+router.get('/tableInfo', authenticateUser, async (req, res) => {
+    try {
+        const queryStatement = `describe sponsors`
+        const tableStructure = await connection.query(queryStatement)
+        res.status(200).json(tableStructure[0])
+    } catch (error) {
+        console.error(`There was an error fetching the table structure`);
+        res.status(500).json({ "message": `There was an error fetching the sponsor data ${error}` })
+    }
+})
+
 //GET - Get sponsors based on the racename -- UNPROTECTED
 router.get("/:raceName", async (req, res) => {
     try {
@@ -20,6 +36,26 @@ router.get("/:raceName", async (req, res) => {
     } catch (error) {
         console.error(`There was an error fetching the sponsors data ${error} - params: ${req.params.raceName}`);
         res.status(500).json({ "message": `There was an error fetching the sponsors data ${error}` })
+    }
+})
+
+
+//POST - Add a sponsor based on the race name -- PROTECTED
+router.post('/:raceName', authenticateUser, async (req, res) => {
+    try {
+        let columnNames = [];
+        let columnValues = [];
+        for (let propertyName in req.body) {
+            columnNames.push(propertyName);
+            columnValues.push(req.body[propertyName])
+        }
+        const queryStatement = `insert into sponsors (${columnNames.join(',')}) values(${columnNames.map(columnName => '?').join(',')})`
+        const insertedSponsor = await connection.query(queryStatement, columnValues)
+        res.status(200).json(insertedSponsor[0])
+    }
+    catch (error) {
+        console.error(`There was an error updating the item ${error}`);
+        res.status(500).json({ "message": `There was an error updating the data ${error}` })
     }
 })
 

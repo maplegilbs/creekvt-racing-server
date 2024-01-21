@@ -60,6 +60,7 @@ router.get('/userInfo', authenticateUser, async (req, res) => {
     res.status(200).json({name, races})
 })
 
+//Update users password.  User name is brought in via the authenticate user middleware so as to protect / prevent user from updating another users password"
 router.patch('/updatePassword', authenticateUser, async(req, res) => {
     try {
         const{userName} = req;
