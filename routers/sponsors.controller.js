@@ -1,6 +1,9 @@
 //Libraries
 const router = require('express').Router();
 const mysql = require('mysql2')
+const multer = require('multer')
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage })
 //Middleware
 const { authenticateUser } = require('../middleware/authenticate')
 //DB Connection
@@ -60,7 +63,24 @@ router.post('/:raceName', authenticateUser, async (req, res) => {
 })
 
 //PATCH - Update a sponsor based on the race name and sponsor id -- PROTECTED
-router.patch('/:raceName/:itemID', authenticateUser, async (req, res) => {
+router.patch('/:raceName/:itemID', upload.single('image'), authenticateUser, async (req, res) => {
+    //Send file to inmotion php for uploading to folder there
+    try {
+        const imageBuffer = req.file.buffer;
+        const fileName = req.file.originalname;
+        await fetch("https://creekvt.com/races/imageUpload.php", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json', // Set the appropriate content type
+            },
+            body: JSON.stringify({
+                image: imageBuffer.toString('base64'),
+                fileName: fileName
+            })
+        })
+    } catch (error) {
+        console.error(`Error uploading image to inmotion: ${error}`)
+    }
     try {
         let modifiedRaces = req.races.map(race => race.split(' ').join('').toLowerCase())
         if (!modifiedRaces.includes(req.params.raceName)) {
@@ -71,7 +91,6 @@ router.patch('/:raceName/:itemID', authenticateUser, async (req, res) => {
             for (let propertyName in req.body) {
                 updateInfoArray.push(`${propertyName} = '${req.body[propertyName]}'`)
             }
-            console.log(updateInfoArray)
             const queryStatement = `update sponsors set ${updateInfoArray.join(', ')} where id = ${req.params.itemID}`
             const updatedItem = await connection.query(queryStatement)
             res.status(200).json(updatedItem[0])
