@@ -101,4 +101,23 @@ router.patch('/:raceName/:itemID', upload.single('image'), authenticateUser, asy
     }
 })
 
+
+//DELETE - delete a sponsor based on the sponsor ID -- PROTECTED
+//! need to delete image from inmotion as well
+router.delete('/:raceName/:sponsorId', authenticateUser, async (req, res)=>{
+    try {
+        let modifiedRaces = req.races.map(race => race.split(' ').join('').toLowerCase())
+        if (!modifiedRaces.includes(req.params.raceName)) {
+            res.status(403).json({ "message": "Permission to modify selected race denied" })
+        }
+        const {sponsorId} = req.params;
+        const queryStatement = `delete from sponsors where id=${sponsorId}`
+        let deletedSponsor = await connection.query(queryStatement);
+        res.status(200).json(deletedSponsor[0])
+    } catch (error) {
+        console.error(`There was an error deleting the item ${error}`);
+        res.status(500).json({ "message": `There was an error updating the data ${error}` })
+    }
+})
+
 module.exports = router;

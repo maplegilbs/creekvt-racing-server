@@ -46,7 +46,7 @@ function createReceiptMessage(raceName, raceDate, transactionID, racers, total) 
     <p style='width: 70%; margin: 10px auto;'>**As the race approaches be sure to check <a href="https://creekvt.com/races/${raceName.split(" ").join("").toLowerCase()}">the race page</a> for any updates should the race need to be moved to a fallback date.**</p>
     <p style='width: 70%; margin: 10px auto;'>Questions?  Reply to this email</p>
     <p style="display: flex; align-items: center; width: 70%; margin: 0 auto;">
-    See You On The River!<img src="https://creekvt.com/races/RacerIcon.png" height=26px/>
+    See You On The River!
     </p>
     `
     return emailTemplate
