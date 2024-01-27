@@ -44,7 +44,27 @@ router.get("/:raceName", async (req, res) => {
 
 
 //POST - Add a sponsor based on the race name -- PROTECTED
-router.post('/:raceName', authenticateUser, async (req, res) => {
+router.post('/:raceName', authenticateUser, upload.single('image'), async (req, res) => {
+    //If image file provided, send file to inmotion php for uploading to folder there
+    if (req.file) {
+        try {
+            const imageBuffer = req.file.buffer;
+            const fileName = req.file.originalname;
+            await fetch("https://creekvt.com/races/imageUpload.php", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json', // Set the appropriate content type
+                },
+                body: JSON.stringify({
+                    image: imageBuffer.toString('base64'),
+                    fileName: fileName,
+                    raceName: req.params.raceName.slice(0, req.params.raceName.length -4)
+                })
+            })
+        } catch (error) {
+            console.error(`Error uploading image to inmotion: ${error}`)
+        }
+    }
     try {
         let columnNames = [];
         let columnValues = [];
@@ -63,23 +83,26 @@ router.post('/:raceName', authenticateUser, async (req, res) => {
 })
 
 //PATCH - Update a sponsor based on the race name and sponsor id -- PROTECTED
-router.patch('/:raceName/:itemID', upload.single('image'), authenticateUser, async (req, res) => {
-    //Send file to inmotion php for uploading to folder there
-    try {
-        const imageBuffer = req.file.buffer;
-        const fileName = req.file.originalname;
-        await fetch("https://creekvt.com/races/imageUpload.php", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json', // Set the appropriate content type
-            },
-            body: JSON.stringify({
-                image: imageBuffer.toString('base64'),
-                fileName: fileName
+router.patch('/:raceName/:itemID', authenticateUser, upload.single('image'), async (req, res) => {
+    //If image file provided, send file to inmotion php for uploading to folder there
+    if (req.file) {
+        try {
+            const imageBuffer = req.file.buffer;
+            const fileName = req.file.originalname;
+            await fetch("https://creekvt.com/races/imageUpload.php", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json', // Set the appropriate content type
+                },
+                body: JSON.stringify({
+                    image: imageBuffer.toString('base64'),
+                    fileName: fileName,
+                    raceName: req.params.raceName.slice(0, req.params.raceName.length -4)
+                })
             })
-        })
-    } catch (error) {
-        console.error(`Error uploading image to inmotion: ${error}`)
+        } catch (error) {
+            console.error(`Error uploading image to inmotion: ${error}`)
+        }
     }
     try {
         let modifiedRaces = req.races.map(race => race.split(' ').join('').toLowerCase())
@@ -104,13 +127,13 @@ router.patch('/:raceName/:itemID', upload.single('image'), authenticateUser, asy
 
 //DELETE - delete a sponsor based on the sponsor ID -- PROTECTED
 //! need to delete image from inmotion as well
-router.delete('/:raceName/:sponsorId', authenticateUser, async (req, res)=>{
+router.delete('/:raceName/:sponsorId', authenticateUser, async (req, res) => {
     try {
         let modifiedRaces = req.races.map(race => race.split(' ').join('').toLowerCase())
         if (!modifiedRaces.includes(req.params.raceName)) {
             res.status(403).json({ "message": "Permission to modify selected race denied" })
         }
-        const {sponsorId} = req.params;
+        const { sponsorId } = req.params;
         const queryStatement = `delete from sponsors where id=${sponsorId}`
         let deletedSponsor = await connection.query(queryStatement);
         res.status(200).json(deletedSponsor[0])
