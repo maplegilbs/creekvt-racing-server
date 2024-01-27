@@ -20,7 +20,7 @@ router.get('/admin/tableInfo/:tableName', authenticateUser, async (req, res) => 
         const tableStructure = await connection.query(queryStatement)
         res.status(200).json(tableStructure[0])
     } catch (error) {
-        console.error(`There was an error fetching the table structure.  ${error}`);
+        console.error(`There was an error fetching the racer_entities table structure.  ${error}`);
         res.status(500).json({ "message": `There was an error fetching the table info data` })
     }
 })
@@ -51,7 +51,7 @@ router.get('/admin/:raceName/:raceYear', authenticateUser, async (req, res) => {
             res.status(200).json(returnedRacers[0])
         }
     } catch (error) {
-        console.error(`There was an error fetching racers based on the passed in year: ${req.params.raceYear} and race: ${req.params.raceName}.  Error: ${error}`);
+        console.error(`There was an error fetching racers for admin based on the passed in year: ${req.params.raceYear} and race: ${req.params.raceName}.  Error: ${error}`);
         res.status(500).json({ "message": `There was an error fetching the data based on the passed in year: ${req.params.raceYear} and race: ${req.params.raceName}.` })
     }
 })

@@ -4,7 +4,7 @@ const app = express();
 const cors = require('cors')
 
 //DEV ONLY
-require('dotenv').config();
+// require('dotenv').config();
 
 //Routers
 const racesRouter = require('./routers/races.controller.js')

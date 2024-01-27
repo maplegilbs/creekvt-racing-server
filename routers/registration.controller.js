@@ -163,7 +163,7 @@ async function addRacers(registrationData, racerEntityID) {
     }
 }
 
-//Create order via paypal API - no info added to DB
+//POST -- Create order via paypal API - no info added to DB
 router.post("/orders/create", checkRegStatus, async (req, res) => {
     try {
         const orderData = req.body;
@@ -176,7 +176,7 @@ router.post("/orders/create", checkRegStatus, async (req, res) => {
 })
 
 
-//Capture order via paypal API (successful payment) and add racer entity and associated racers to DB
+//PST -- Capture order via paypal API (successful payment) and add racer entity and associated racers to DB
 router.post("/orders/capture/:orderID", async (req, res) => {
     try {
         const { orderID } = req.params;

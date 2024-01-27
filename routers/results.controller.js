@@ -13,7 +13,7 @@ const connection = mysql.createPool({
 
 //GET - get the table format -- PROTECTED
 
-//GET - get all results
+//GET - get all results -- UNPROTECTED
 router.get('/', async (req, res)=>{
     try {
         const queryStatement = `SELECT * FROM results ${req.query.raceName? `WHERE lower(replace(raceName, " ", "")) = "${req.query.raceName}"`:""} ORDER BY year desc, raceName asc, place asc`
@@ -26,7 +26,7 @@ router.get('/', async (req, res)=>{
 
 })
 
-//GET - get all available years grouped by race name
+//GET - get all available years grouped by race name -- UNPROTECTED
 router.get('/resultYears', async (req, res) => {
     try {
         const queryStatement = `select DISTINCT raceName, year as raceYear, GROUP_CONCAT(distinct raceCategory SEPARATOR ", ") as raceCategory from results ${req.query.raceName? `WHERE lower(replace(raceName, " ", "")) = "${req.query.raceName}"`:""} group by raceName, raceYear `

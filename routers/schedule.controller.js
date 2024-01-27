@@ -18,7 +18,7 @@ router.get('/tableInfo', authenticateUser, async (req, res) => {
         const tableStructure = await connection.query(queryStatement)
         res.status(200).json(tableStructure[0])
     } catch (error) {
-        console.error(`There was an error fetching the table structure`);
+        console.error(`There was an error fetching the schedule table structure`);
         res.status(500).json({ "message": `There was an error fetching the schedule data ${error}` })
     }
 })
@@ -52,7 +52,7 @@ router.post('/:raceName', authenticateUser, async (req, res) => {
             res.status(200).json(insertedScheduleItem[0])
         }
     } catch (error) {
-        console.error(`There was an error updating the race ${error}`);
+        console.error(`There was an error updating the schedule data based on passed in race name ${req.params.raceName} ${error}`);
         res.status(500).json({ "message": `There was an error updating the data ${error}` })
     }
 })
@@ -74,7 +74,7 @@ router.patch('/:raceName/:itemID', authenticateUser, async (req, res) => {
             res.status(200).json(updatedItem[0])
         }
     } catch (error) {
-        console.error(`There was an error updating the item ${error}`);
+        console.error(`There was an error updating the schedule item ${error}`);
         res.status(500).json({ "message": `There was an error updating the data ${error}` })
     }
 })
@@ -90,7 +90,7 @@ router.delete("/:raceName/:itemID", authenticateUser, async (req, res) => {
             res.status(200).json(deletedItem[0])
         }
     } catch (error) {
-        console.error(`There was an error deleting the item ${error}`);
+        console.error(`There was an error deleting the schedule item ${error}`);
         res.status(500).json({ "message": `There was an error deleting the item ${error}` })
     }
 })
