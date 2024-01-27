@@ -17,7 +17,7 @@ const connection = mysql.createPool({
 
 router.use(express.json())
 
-//need to add admin authentication check
+//POST -- Add a user - right now setup via postman - need to add admin authentication check for front web based setup -- PROTECTED
 router.post('/adduser', authenticateUser, async (req, res) => {
     try {
         const { userName, password, name, races } = req.body;
@@ -33,6 +33,8 @@ router.post('/adduser', authenticateUser, async (req, res) => {
     }
 })
 
+
+//POST -- Allow user to login and return JWT if successfull
 router.post('/login', async (req, res) => {
     try {
         const { userName, password } = req.body;
@@ -45,6 +47,7 @@ router.post('/login', async (req, res) => {
             let name = returnedUser[0][0].name;
             let role = returnedUser[0][0].role;
             let races = JSON.parse(returnedUser[0][0].races)
+            //!need to set expiry for token
             const token = jwt.sign({userName, name, races, role}, process.env.JWT_SECRET)
             res.status(200).json(token)
         }
@@ -54,13 +57,14 @@ router.post('/login', async (req, res) => {
     }
 })
 
+//GET -- Get user name and races available to user -- PROTECTED
 router.get('/userInfo', authenticateUser, async (req, res) => {
     let name = req.name;
     let races = req.races;
     res.status(200).json({name, races})
 })
 
-//Update users password.  User name is brought in via the authenticate user middleware so as to protect / prevent user from updating another users password"
+//PATCH -- Update users password.  User name is brought in via the authenticate user middleware so as to protect / prevent user from updating another users password -- PROTECTED
 router.patch('/updatePassword', authenticateUser, async(req, res) => {
     try {
         const{userName} = req;
@@ -81,7 +85,6 @@ router.patch('/updatePassword', authenticateUser, async(req, res) => {
     }
 
 })
-
 
 
 module.exports = router;

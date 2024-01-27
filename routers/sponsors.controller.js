@@ -25,7 +25,7 @@ router.get('/tableInfo', authenticateUser, async (req, res) => {
         const tableStructure = await connection.query(queryStatement)
         res.status(200).json(tableStructure[0])
     } catch (error) {
-        console.error(`There was an error fetching the table structure`);
+        console.error(`There was an error fetching the sponsor table structure`);
         res.status(500).json({ "message": `There was an error fetching the sponsor data ${error}` })
     }
 })
@@ -63,6 +63,7 @@ router.post('/:raceName', authenticateUser, upload.single('image'), async (req, 
             })
         } catch (error) {
             console.error(`Error uploading image to inmotion: ${error}`)
+            // res.status(500).json({ "message": `There was an error posting the sponsors data ${error}` })
         }
     }
     try {

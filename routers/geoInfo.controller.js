@@ -19,7 +19,7 @@ router.get('/tableInfo', authenticateUser, async (req, res) => {
         const tableStructure = await connection.query(queryStatement)
         res.status(200).json(tableStructure[0])
     } catch (error) {
-        console.error(`There was an error fetching the table structure`);
+        console.error(`There was an error fetching the map_info table structure`);
         res.status(500).json({ "message": `There was an error fetching the schedule data ${error}` })
     }
 })
@@ -33,7 +33,7 @@ router.get("/locationNames/:raceName", async(req, res)=>{
         const returnedLocaitonNames = await connection.query(queryStatement)
         res.status(200).json(returnedLocaitonNames[0])
     } catch (error) {
-        console.error(`There was an error fetching racer data - provided params racename: ${req.params.raceName}.  Error: ${error}`);
+        console.error(`There was an error fetching locations data provided params racename: ${req.params.raceName}.  Error: ${error}`);
         res.status(500).json({ "message": `There was an error fetching the location names for the race: ${req.params.raceName}` })
 
     }
@@ -45,7 +45,7 @@ router.get("/mapOptions/:raceName", async (req, res) => {
         const returnedMapOptions = await connection.query(queryStatement)
         res.status(200).json(returnedMapOptions[0])
     } catch (error) {
-        console.error(`There was an error fetching racer data - provided params racename: ${req.params.raceName}.  Error: ${error}`);
+        console.error(`There was an error fetching map options data - provided params racename: ${req.params.raceName}.  Error: ${error}`);
         res.status(500).json({ "message": `There was an error fetching the data ${error}` })
     }
 })
@@ -57,7 +57,7 @@ router.get("/:raceName", async (req, res) => {
         const returnedMapData = await connection.query(queryStatement)
         res.status(200).json(returnedMapData[0])
     } catch (error) {
-        console.error(`There was an error fetching racer data - provided params racename: ${req.params.raceName}.  Error: ${error}`);
+        console.error(`There was an error fetching locations data - provided params racename: ${req.params.raceName}.  Error: ${error}`);
         res.status(500).json({ "message": `There was an error fetching the data ${error}` })
     }
 })
@@ -79,7 +79,7 @@ router.post("/:raceName", authenticateUser, async (req, res) => {
             res.status(200).json(addedMapData[0])
         }
     } catch (error) {
-        console.error(`There was an error fetching racer data - provided params racename: ${req.params.raceName}.  Error: ${error}`);
+        console.error(`There was an error posting location data - provided params racename: ${req.params.raceName}.  Error: ${error}`);
         res.status(500).json({ "message": `There was an error fetching the data ${error}` })
     }
 })
