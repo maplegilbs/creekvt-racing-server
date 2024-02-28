@@ -14,7 +14,7 @@ const connection = mysql.createPool({
 //PAYPAL Variables
 const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_BASE_URL } = process.env;
 const payeeLookup = {
-    testrace: process.env.PAYPAL_TESTRACE_PAYEE,
+    peavinerace: process.env.PAYPAL_PEAVINERACE_PAYEE,
     newhavenrace: process.env.PAYPAL_NEWHAVENRACE_PAYEE
 }
 
