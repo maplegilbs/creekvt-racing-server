@@ -4,21 +4,25 @@ const {formatDateTime} = require('./formatDateTime.js')
 //Email Variables
 const { NEWHAVEN_SENDER_USER, NEWHAVEN_SENDER_PASS } = process.env
 const { PEAVINE_SENDER_USER, PEAVINE_SENDER_PASS } = process.env
+const { WELLS_SENDER_USER, WELLS_SENDER_PASS } = process.env
 const { CREEKVT_SENDER_USER, CREEKVT_SENDER_PASS } = process.env
 const emailLookup = {
     senderName: {
         newhavenrace: "New Haven Ledges Race",
         peavinerace: "Peavine Race",
+        wellsriverrumble: "Wells River Rumble",
         general: "CreekVT Races Contact"
     },
     user: {
         newhavenrace: NEWHAVEN_SENDER_USER,
         peavinerace: PEAVINE_SENDER_USER,
+        wellsriverrumble: WELLS_SENDER_USER,
         general: CREEKVT_SENDER_USER
     },
     pass: {
         newhavenrace: NEWHAVEN_SENDER_PASS,
         peavinerace: PEAVINE_SENDER_PASS,
+        wellsriverrumble: WELLS_SENDER_PASS,
         general: CREEKVT_SENDER_PASS
     }
 }
