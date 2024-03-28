@@ -16,7 +16,7 @@ const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_BASE_URL } = process.env;
 const payeeLookup = {
     peavinerace: process.env.PAYPAL_PEAVINERACE_PAYEE,
     newhavenrace: process.env.PAYPAL_NEWHAVENRACE_PAYEE,
-    wellseriverrumble: process.env.PAYPAL_WELLSRIVERRUMBLE_PAYEE
+    wellsriverrumble: process.env.PAYPAL_WELLSRIVERRUMBLE_PAYEE
 }
 
 //Get access token for paypal api requests
