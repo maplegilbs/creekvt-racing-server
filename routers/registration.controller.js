@@ -1,8 +1,8 @@
 //Libraries
 const router = require('express').Router();
-const {sendEmail, createReceiptMessage} = require('../utils/emails.js')
+const { sendEmail, createReceiptMessage } = require('../utils/emails.js')
 //Middleware
-const {checkRegStatus} = require('../middleware/registrationCheck.js') 
+const { checkRegStatus } = require('../middleware/registrationCheck.js')
 //DB Connections
 const mysql = require('mysql2')
 const connection = mysql.createPool({
@@ -47,15 +47,26 @@ async function generateAccessToken() {
 async function calcTotal(orderData) {
     //Get fees and ACA discounts then calculates the total based on the racers and whether or not they have an ACA number
     try {
-        const queryStatement = `select fee, acaDiscount from race_details where name = "${orderData.raceName}"`
+        const queryStatement = `select fee, youthFee, acaDiscount, date from race_details where name = "${orderData.raceName}"`
         const feeResponse = await connection.query(queryStatement)
         const feeInfo = feeResponse[0][0]
         let acaDiscount = Number(feeInfo.acaDiscount);
         let raceFee = Number(feeInfo.fee);
         let subTotal = 0;
         let total = orderData.racers.reduce((accum, racer) => {
+            let isRacerYouth = false;
+            //! set age from database rather than hardcoded as 18 here
+            if (racer.birthdate) {
+                let racerBirthdateAsDate = new Date(racer.birthdate)
+                let raceDateAsDate = new Date(feeInfo.date)
+                if (raceDateAsDate.getFullYear() - racerBirthdateAsDate.getFullYear() > 18) { isRacerYouth = false }
+                else if (raceDateAsDate.getFullYear() - racerBirthdateAsDate.getFullYear() < 18) { isRacerYouth = true }
+                else if (racerBirthdateAsDate.getMonth() < raceDateAsDate.getMonth()) { isRacerYouth = false }
+                else if (racerBirthdateAsDate.getDate() < raceDateAsDate.getDate()) { isRacerYouth = false }
+                else { isRacerYouth = true }
+            }
             const racerDiscount = racer.acaNumber ? (acaDiscount * -1) : 0;
-            const racerTotal = raceFee + racerDiscount;
+            const racerTotal = isRacerYouth && feeInfo.youthFee ? Number(feeInfo.youthFee) + racerDiscount : raceFee + racerDiscount;
             accum += racerTotal;
             return accum
         }, subTotal)
@@ -179,6 +190,7 @@ router.post("/orders/create", checkRegStatus, async (req, res) => {
 
 //PST -- Capture order via paypal API (successful payment) and add racer entity and associated racers to DB
 router.post("/orders/capture/:orderID", async (req, res) => {
+    //!should fix this try/catch to not error out on issue with email sending
     try {
         const { orderID } = req.params;
         const { registrationData, date } = req.body;
