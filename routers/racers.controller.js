@@ -60,7 +60,7 @@ router.get('/admin/:raceName/:raceYear', authenticateUser, async (req, res) => {
 router.get('/:raceName/:raceYear', async (req, res) => {
     try {
         const queryStatement = `
-                SELECT racers.firstName, racers.lastName, racer_entities_details.id as entityID, racer_entities_details.category
+                SELECT racers.firstName, racers.lastName, racers.location, racer_entities_details.id as entityID, racer_entities_details.category
                 FROM racers 
                 JOIN (
                     SELECT racer_entities.*, race_details.categoryOptions 
